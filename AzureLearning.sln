@@ -1,0 +1,35 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.11222.15
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{55E02B97-1C7F-44EC-A5D9-378B8D98CD94}"
+	ProjectSection(SolutionItems) = preProject
+		AzureAPIM_README.md = AzureAPIM_README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Practicals", "Practicals", "{CA0DF920-9097-4C62-A026-06AD23C941D8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzFunctionApp", "AzFunctionApp\AzFunctionApp.csproj", "{21669782-B06B-425C-AC88-09DDB3C52B22}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{21669782-B06B-425C-AC88-09DDB3C52B22}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21669782-B06B-425C-AC88-09DDB3C52B22}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21669782-B06B-425C-AC88-09DDB3C52B22}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21669782-B06B-425C-AC88-09DDB3C52B22}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{21669782-B06B-425C-AC88-09DDB3C52B22} = {CA0DF920-9097-4C62-A026-06AD23C941D8}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7219DBD9-6FD9-4AE7-A9E0-FC231EB28D9D}
+	EndGlobalSection
+EndGlobal
