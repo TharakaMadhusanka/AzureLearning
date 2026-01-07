@@ -1,8 +1,8 @@
 {
   "profiles": {
-    "AzFunctionApp": {
+    "MyFunctionApp": {
       "commandName": "Project",
-      "commandLineArgs": "--port 7217",
+      "commandLineArgs": "--port 7104",
       "launchBrowser": false
     }
   }

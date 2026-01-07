@@ -36,7 +36,7 @@ Pricing Tier → The membership level (basic, premium, VIP)
 - App Service Plan
   What it is
 
-  An App Service Plan defines:
+  # An App Service Plan defines:
 
         - Region
         - OS (Windows / Linux)

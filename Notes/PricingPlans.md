@@ -85,3 +85,12 @@ OS Support
 # Billing
 
 ![Func Billing](Func_Billing.png)
+
+| Plan                 | Cold Start       | Scale to Zero | Cost     | Best For                   |
+| -------------------- | ---------------- | ------------- | -------- | -------------------------- |
+| Consumption          | ❌ cold starts   | ✔️            | Cheapest | Dev / low SLA              |
+| **Flex Consumption** | ✔️ no cold start | ✔️            | Low      | Production APIs & workers  |
+| Premium              | ✔️ no cold start | ❌            | High     | Enterprise heavy workloads |
+| App Service          | ✔️               | ❌            | Highest  | Always-on APIs             |
+
+# App Service Plans

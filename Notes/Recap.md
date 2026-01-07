@@ -308,3 +308,5 @@ data = response.Value.Content.ToArray();`
 - Azure Monitor Resource Health alerts are used for infrastructure monitoring, not application performance.
 - Azure Service Health provides information about Azure service issues and planned maintenance, not application performance.
 - Azure Advisor provides best practice recommendations, not application performance alerts.
+
+- **Azure Bicep** is a Domain Specific Language (DSL) for declaratively defining, deploying, and managing Azure resources as Infrastructure as Code (IaC), offering a simpler, more readable syntax than traditional ARM (Azure Resource Manager) JSON templates, which it transpiles into behind the scenes, simplifying complex deployments with features like modules and type safety for better developer experience.

@@ -130,3 +130,43 @@ diff - --assign-identity [With no Identity Name]
 27. Verify/ Check azd version (AZ CLI Local)
 
 `azd version`
+
+28. Bash Command
+
+`SET APP_NAME=$(azd env get-value AZURE_FUNCTION_NAME)
+func azure functionapp list-functions $APP_NAME --show-keys`
+
+The `azd env get-value` command gets your function app name from the local environment.
+When you use the `--show-keys` option with `func azure functionapp list-functions`, the returned Invoke URL: value for each endpoint includes a function-level access key.
+
+29. Deploy Az Function in Az Powershell [Exam Qn]
+
+`$resourceGroupName = "exampleRG"
+$location = Read-Host -Prompt "Enter a supported Azure region"
+$templateUri = "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/quickstarts/microsoft.web/function-app-flex-managed-identities/azuredeploy.json"
+
+New-AzResourceGroup -Name $resourceGroupName -Location "$location"
+New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName -TemplateUri $templateUri -functionAppRuntime "dotnet-isolated" -functionAppRuntimeVersion "8.0"
+
+Read-Host -Prompt "Press [ENTER] to continue ..."`
+
+in Az CLI
+
+`read -p "Enter a supported Azure region: " location &&
+resourceGroupName=exampleRG &&
+templateUri="https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/quickstarts/microsoft.web/function-app-flex-managed-identities/azuredeploy.json" &&
+az group create --name $resourceGroupName --location "$location" &&
+az deployment group create --resource-group $resourceGroupName --template-uri  $templateUri --parameters functionAppRuntime=dotnet-isolated functionAppRuntimeVersion=8.0 &&
+echo "Press [ENTER] to continue ..." &&
+read`
+
+30. View the storage queues in account [AZ CLI]
+
+`set AZURE_STORAGE_CONNECTION_STRING="<MY_CONNECTION_STRING>"`
+`az storage queue list --output tsv`
+
+31. get message from queue
+
+az storage message get --queue-name outqueue -o tsv --query [].{Message:content} > %TEMP%out.b64 && certutil -decode -f %TEMP%out.b64 %TEMP%out.txt > NUL && type %TEMP%out.txt && del %TEMP%out.b64 %TEMP%out.txt /q`
+
+Note - After you execute `az storage message get`, the message is removed from the queue. If there was only one message in outqueue, you won't retrieve a message when you run this command a second time and instead get an error.
