@@ -55,3 +55,12 @@ Ref: [Custom Authorization Attribute](https://learn.microsoft.com/en-us/aspnet/c
 | Background Processing  | Use queues, workers, Kafka/Service Bus                                                |
 | Testing                | Unit, integration, contract, load, chaos testing                                      |
 | Feature Flags          | Safe rollout, toggle features for roles, tenants, environment                         |
+
+- Logging: Serilog
+
+| Log Type                            | Best Storage                                  | Notes                                                               |
+| ----------------------------------- | --------------------------------------------- | ------------------------------------------------------------------- |
+| **Debug / Info / Performance logs** | **File / JSON**                               | Use **Serilog file sink**, ship to ELK / Seq / Grafana              |
+| **Warning / Error / Critical**      | **File + optional DB**                        | Critical errors + audit logs can also go to MSSQL for easy querying |
+| **Audit logs / Compliance logs**    | **DB**                                        | Must be persisted, easy to query, rarely deleted                    |
+| **Metrics / Tracing**               | **Prometheus / OpenTelemetry / App Insights** | Separate from logging; do not store metrics in DB logs              |
