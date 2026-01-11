@@ -93,4 +93,24 @@ OS Support
 | Premium              | ✔️ no cold start | ❌            | High     | Enterprise heavy workloads |
 | App Service          | ✔️               | ❌            | Highest  | Always-on APIs             |
 
-# App Service Plans
+# App Service Plans [Web Apps]
+
+- Main Pricing Plans
+
+1. Shared Compute
+
+   1. Free & Shared
+   2. Runs app on the same Azure VM as other App Service, as in, this will run along with other customer's web apps too.
+   3. Thus this plan is recommended to use only for dev/ testing.
+   4. These tiers allocate CPU quotas to each app that runs on the shared resources, and the resources can't scale out.
+
+2. Dedicated Compute
+
+   1. Basic, Standard, Premium, PremiumV2, PremiumV3
+   2. Apps run on a dedicated Azure VM, not sharing with other customers.
+
+3. Isolated
+   1. Isolated, IsolatedV2
+   2. Run apps on dedicated azure VM & dedicated Azure Virtual Network.
+   3. It provides network isolation on top of compute isolation to your apps.
+   4. It provides the maximum scale-out capabilities.

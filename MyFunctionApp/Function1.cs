@@ -17,6 +17,7 @@ public class Function1
     [Function("Function1")]
     public IActionResult Run([HttpTrigger(AuthorizationLevel.Function, "get", "post")] HttpRequest req)
     {
+        System.Diagnostics.Trace.TraceInformation("Hello World");
         _logger.LogInformation("C# HTTP trigger function processed a request.");
         return new OkObjectResult("Welcome to Azure Functions!");
     }
