@@ -177,4 +177,150 @@ Config:
 | Compliance    | Regulatory retention               | Regulatory or legal hold                           |
 | Modifications | Cannot delete/modify during period | Cannot delete/modify any blob until policy expires |
 
--
+## Pricing Tiers
+
+1. Standard - general purpose V2
+2. Premium -
+   1. High performance
+   2. using SSD
+   3. Available 3 account types
+      1. Page Blob
+      2. Block blob
+      3. file shares
+   4. No noisy-neighbor problems
+   5. Ultra-low latency
+   6. Predictable throughput
+
+### Standard General Purpose V2
+
+- Supported Blob Storage including Data Lake, Queue Storage, Table Storage & Azure Files
+- Support Redundancy, LRS, ZRS, RA-GRS, GRS, GZRS, RA-GZRS
+- Usage:
+  - Standard storage account type for blobs, file shares, queues, and tables.
+  - Recommended for most scenarios using Azure Storage.
+  - _If you want support for network file system (NFS) in Azure Files, use the premium file shares account type._
+
+### Premium Storage
+
+1. Premium block blobs
+
+   - Supports Blob storage, Data Lake
+   - LRS & ZRS
+   - Usage:
+     - Premium storage account type for block blobs and _append blobs._
+     - Recommended for scenarios with high transaction rates or that use smaller objects or require consistently low storage latency.
+
+2. Premium Page Blob
+
+   1. Page Blobs only
+   2. LRS & ZRS
+   3. Premium storage account type for page blobs only.
+   4. Usage: Virtual Hard Disks (VHD), rand read/ write data
+   5. Premium Page Blobs are basically “cloud SSD hard drives” used to store VM disks and ultra-fast databases.
+
+| Use Case                 | Why Premium Page Blob          |
+| ------------------------ | ------------------------------ |
+| Azure VM OS Disk         | Fast boot & I/O                |
+| Azure VM Data Disk       | Databases, high IOPS workloads |
+| SQL Server on Azure VM   | Stable 5,000+ IOPS             |
+| SAP HANA on Azure VM     | Guaranteed throughput          |
+| Large caching engines    | Very fast random updates       |
+| Legacy VHD-based systems | Needs block-level disk access  |
+
+3. Premium File Share
+   1. Azure Files
+   2. LRS & ZRS
+   3. Usage:
+      1. Premium storage account type for file shares only.
+      2. Recommended for enterprise or high-performance scale applications.
+
+| Blob Type     | Used For                                         |
+| ------------- | ------------------------------------------------ |
+| Block Blob    | Normal files, images, videos, backups            |
+| Append Blob   | Logs                                             |
+| **Page Blob** | Virtual hard disks (VHD), random read/write data |
+
+- Performance Comparison
+
+| Metric     | Hot Block Blob | Premium Page Blob |
+| ---------- | -------------- | ----------------- |
+| Latency    | 10–30 ms       | **<1 ms**         |
+| IOPS       | ~500           | **5,000+**        |
+| Throughput | ~60 MB/s       | **200+ MB/s**     |
+
+## Encryption
+
+- By default data store in a storage are encrypted by Microsoft Managed Keys.
+- To manage excryption with own keys [Service Side Encryption],
+  - customer-managed key - to use for encrypting and decrypting data in Blob Storage and in Azure Files.
+    - Customer-managed keys must be stored in Azure Key Vault or Azure Key Vault Managed Hardware Security Model (HSM).
+    - customer-provided key:
+      - on Blob Storage operations.
+      - A client can include an encryption key on a read/write request for granular control over how blob data is encrypted and decrypted.
+  - Client-side encryption
+    - The Blob Storage and Queue Storage client libraries uses AES in order to encrypt user data.
+    - There are two versions of client-side encryption available in the client libraries:
+      - Version 2 uses _Galois/Counter Mode (GCM) mode with AES_.
+        - The Blob Storage and Queue Storage SDKs support client-side encryption with v2.
+      - Version 1 uses Cipher Block Chaining (CBC) mode with AES.
+        - _The Blob Storage, Queue Storage, and Table Storage_ SDKs support client-side encryption with v1.
+
+## Lifecycle Policy
+
+- Is a collection of rules in a JSON document.
+- Each rule includes filter set and action set.
+- The action set applies to the tier or delete actions to the filtered set of objects.
+- Can define up to 100 rules in a policy.
+- Applicable Filters:
+  - blobTypes
+    - Required
+    - ex> block blob, page blob etc.
+  - prefixMatch
+    - Optional
+    - An array of string for prefixes to be match.
+    - Each rule can define up to 10 prefixes.
+    - A prefix string must start with a container name
+  - blobIndexMatch
+    - An array of dictionary values consisting of blob index tag key and value conditions to be matched.
+  - Actions
+    1. tierToCool
+       - Supported for block blob.
+       - Supported for Snapshot
+       - Supported for Previous Versions
+    2. tierToCold
+       - Supported for block blob
+       - Supported for Snapshot
+       - Supported for Previous Versions
+    3. enableAutoTierToHotFromCool
+       - Supported for block blob
+       - Snapshot not supported
+       - Previous Versions not supported
+    4. tierToArchive
+       - Supported for block blob
+       - Supported Snapshot
+       - Supported Previous Versions
+    5. delete
+       - supported for block blob & append blob
+       - Supported for Snapshot
+       - Supported for Previous Version
+  - Action Run Conditions
+    1. daysAfterModificationGreaterThan
+       - integer value indicating the age in days
+       - condition for base blob actions
+    2. daysAfterCreationGreaterThan
+       - integer value indicating the age in days
+       - condition for blob snapshot actions
+    3. daysAfterLastAccessTimeGreaterThan
+       - integer value indicating the age in days
+       - The condition for a current version of a blob when access tracking is enabled
+    4. daysAfterLastTierChangeGreaterThan
+       - Integer value indicating the age in days after last blob tier change time
+       - The minimum duration in days that a rehydrated blob is kept in hot, cool, or cold tiers before being returned to the archive tier. This condition applies only to `tierToArchive` actions.
+
+`Note: If you define more than one action on the same blob, lifecycle management applies the least expensive action to the blob. For example, action delete is cheaper than action tierToArchive. Action tierToArchive is cheaper than action tierToCool.`
+
+### Base blobs use the last modified time to track age. Blob snapshots use the snapshot creation time to track age.
+
+#### A lifecycle management policy must be read or written in full. Partial updates aren't supported.
+
+Qn: What will happen if delete blob before minimum retain period from a tier?

@@ -11,6 +11,8 @@
 
 Ref: [Custom Authorization Attribute](https://learn.microsoft.com/en-us/aspnet/core/security/authorization/iard?view=aspnetcore-10.0)
 
+- [Checklist](https://mathieu.fenniak.net/the-api-checklist/)
+
 # Feature Flags
 
 - Feature Flag Table

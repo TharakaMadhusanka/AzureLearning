@@ -114,3 +114,14 @@ OS Support
    2. Run apps on dedicated azure VM & dedicated Azure Virtual Network.
    3. It provides network isolation on top of compute isolation to your apps.
    4. It provides the maximum scale-out capabilities.
+
+# Storage
+
+1. Standard - general purpose V2
+2. Premium -
+   1. High performance
+   2. using SSD
+   3. Available 3 account types
+      1. Page Blob
+      2. Block blob
+      3. file shares
