@@ -257,6 +257,8 @@ Config:
     - customer-provided key:
       - on Blob Storage operations.
       - A client can include an encryption key on a read/write request for granular control over how blob data is encrypted and decrypted.
+      - In order to use customer-managed keys, the following resources will need to have been created beforehand.
+        - A user-assigned identity that has Get, Wrap key, and Unwrap key permissions on the same key vault.
   - Client-side encryption
     - The Blob Storage and Queue Storage client libraries uses AES in order to encrypt user data.
     - There are two versions of client-side encryption available in the client libraries:
@@ -323,4 +325,167 @@ Config:
 
 #### A lifecycle management policy must be read or written in full. Partial updates aren't supported.
 
+### Rehydrate Blob
+
+- Blob is in Archive tier means it is offline, hence, cannot be read or modified.
+- If need to read it again, it needs to be rehydrated to an online tier either to HOT or COOL ||
+- 2 options to rehydrate
+
+  1. Copy an archived blob to an online tie: do this using `Copy Blob` or `Copy Blob from URL` operation
+
+  - When you copy an archived blob to a new blob in an online tier, the source blob remains unmodified in the archive tier.
+  - You must copy the archived blob to a new blob with a different name or to a different container.
+  - You can't overwrite the source blob by copying to the same blob.
+
+  2. Change a blob's access tier to an online tier: change the tier using `Set Blob Tier` operation.
+
+- To set the rehydrate priority can set the header `x-ms-rehydrate-priority`
+
+  - Options
+    - Standard Priority: rehydration request is processed in the order it was recieved and might take it up to 15 hours.
+    - High Priority: rehydration request is prioritized over standard priority requests and might complete in under one hour for objects under 10 GB in size.
+
+Note: Changing a blob's tier doesn't affect its last modified time. If there is a lifecycle management policy in effect for the storage account, then rehydrating a blob with Set Blob Tier can result in a scenario where the lifecycle policy moves the blob back to the archive tier after rehydration because the last modified time is beyond the threshold set for the policy
+
 Qn: What will happen if delete blob before minimum retain period from a tier?
+
+- Blob containers, by default, do not permit anonymous access to their content.
+- When storage account key access is disabled, any requests to the account that are authorized with Shared Key, including shared access signatures (SAS), will be denied. Client applications that currently access the storage account using shared key will no longer work.
+- Hierarchical namespace, complemented by Data Lake Storage Gen2 endpoint, enables file and directory semantics, accelerates big data analytics workloads, and enables access control lists (ACLs)
+
+  - SFTP can only be enabled for hierarchical namespace accounts
+  - To enable NFS v3 'hierarchical namespace' must be enabled.
+
+- What is Microsoft Entra Tenant?
+
+### Protect Blob Data
+
+#### Recovery Methods
+
+- To Protect data from accidental or erroneous deletion or modification.
+  - point-in-time restore
+  - Soft-delete for blobs
+  - Soft-delete for containers
+  - Soft-delete for file share
+  -
+
+#### Tracking
+
+- Manage versions and keep track of changes made to your blob data
+  - Versioning
+  - Blob Change feed
+
+#### Access Control
+
+- version-level immutability support:
+  - Allows you to set time-based retention policy on the account-level that will apply to all blob versions.
+  - Enable this feature to set a default policy at the account level.
+  - Without enabling this, you can still set a default policy at the container level or set policies for specific blob versions.
+  - Versioning is required for this property to be enabled.
+
+| Feature                   | Protects Against             | Level            |
+| ------------------------- | ---------------------------- | ---------------- |
+| **Snapshot**              | Accidental overwrite/delete  | Blob             |
+| **Versioning**            | Logical file history         | Blob             |
+| **Soft Delete**           | Accidental deletion          | Blob / Container |
+| **Point-in-Time Restore** | Mass corruption / ransomware | Account          |
+| **Change Feed**           | Auditing & replication       | Account          |
+| **Immutable (WORM)**      | Legal retention              | Blob             |
+
+1. Blob Snapshot
+
+- Creates a read-only copy of a blob at a moment in time.
+
+  - Manual
+  - Read-only
+  - stored as delta
+  - you manage clean up
+
+- Use when:
+
+  - Before modifying a critical file
+  - Manual rollback
+
+- Restore: Copy snapshot ➜ base blob
+
+2. Blob Versioning (Auto History)
+
+- Azure automatically keeps every previous version of every blob.
+  - Automatic
+  - Writable new version
+  - Each update creates a new version
+  - pay only for the delta storage
+
+3. Soft Delete
+
+- Allows restoring deleted blobs.
+
+  - Time-based retention
+  - Blob or Container level
+  - Deleted data is hidden but recoverable
+
+- Use when:
+  - Human mistakes
+  - App bugs deleting data
+
+4. Point-in-Time Restore (PITR)
+
+- This is enterprise-grade ransomware recovery.
+
+  - Restore entire storage account
+  - Choose any time within last 1–365 days
+  - Restores all containers/blobs to that time
+
+- Uses internally
+  ✔ Versioning
+  ✔ Change feed
+  ✔ Soft delete
+
+- Use when:
+  - Ransomware encrypts everything
+  - Mass accidental delete
+  - Corruption at scale
+
+This is the “NUCLEAR ROLLBACK BUTTON”.
+
+5. Change Feed
+
+- Immutable log of every change that happened in your storage account.
+
+  - Blob created
+  - Modified
+  - Deleted
+  - Snapshots
+  - Versions
+
+- Use when:
+  - Auditing
+  - Replication
+  - SIEM monitoring
+  - Data lake pipelines
+
+#### Summary
+
+- Change Feed tracks all operations
+- Versioning stores old versions
+- Soft Delete stores deleted blobs
+- PITR uses Change Feed + Versioning to rebuild account
+
+#### What should you enable in Production
+
+| Feature     | Enable?  |
+| ----------- | -------- |
+| Versioning  | ✅ MUST  |
+| Soft Delete | ✅ MUST  |
+| Change Feed | ✅ MUST  |
+| PITR        | ✅ MUST  |
+| Snapshot    | Optional |
+
+#### Real world ex:
+
+| Accident               | Recovery    |
+| ---------------------- | ----------- |
+| Overwrite one file     | Versioning  |
+| Delete folder          | Soft Delete |
+| Ransomware attack      | PITR        |
+| Audit who deleted what | Change Feed |
