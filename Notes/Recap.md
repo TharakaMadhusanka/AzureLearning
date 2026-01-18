@@ -57,7 +57,6 @@
   | Pub/Sub         | ✅                  | ✅                 | ❌                  |
   | Scale           | Millions events/day | Thousands/sec      | **Millions/sec**    |
   | Typical payload | Small JSON          | Business objects   | Telemetry / logs    |
-
   - Event Grid – “Something happened”
 
             Used for:
@@ -93,7 +92,6 @@
 
   Exam pattern cheat
   Question says Pick
-
   - “Notify”, “react to”, “trigger” Event Grid
   - “Process order”, “transaction”, “workflow” Service Bus
   - “Millions of telemetry”, “streaming” Event Hub
@@ -310,3 +308,35 @@ data = response.Value.Content.ToArray();`
 - Azure Advisor provides best practice recommendations, not application performance alerts.
 
 - **Azure Bicep** is a Domain Specific Language (DSL) for declaratively defining, deploying, and managing Azure resources as Infrastructure as Code (IaC), offering a simpler, more readable syntax than traditional ARM (Azure Resource Manager) JSON templates, which it transpiles into behind the scenes, simplifying complex deployments with features like modules and type safety for better developer experience.
+
+### Azure C# SDKs
+
+| Category                | SDK / NuGet Package                  | Namespace                              | Primary Use            | Typical Scenarios                                        |
+| ----------------------- | ------------------------------------ | -------------------------------------- | ---------------------- | -------------------------------------------------------- |
+| **Authentication**      | Azure.Identity                       | `Azure.Identity`                       | Azure authentication   | Managed Identity, Service Principal, Default credentials |
+| **Blob Storage**        | Azure.Storage.Blobs                  | `Azure.Storage.Blobs`                  | Blob operations        | File upload/download, images, backups                    |
+| **Queue Storage**       | Azure.Storage.Queues                 | `Azure.Storage.Queues`                 | Queue messaging        | Background processing, async workflows                   |
+| **File Shares**         | Azure.Storage.Files.Shares           | `Azure.Storage.Files.Shares`           | File share access      | Lift-and-shift file systems                              |
+| **Service Bus**         | Azure.Messaging.ServiceBus           | `Azure.Messaging.ServiceBus`           | Enterprise messaging   | Queues, Topics, DLQ, Sessions                            |
+| **Event Hubs**          | Azure.Messaging.EventHubs            | `Azure.Messaging.EventHubs`            | Event streaming        | Telemetry, logs, IoT ingestion                           |
+| **Event Grid**          | Azure.Messaging.EventGrid            | `Azure.Messaging.EventGrid`            | Event routing          | Reactive systems, serverless triggers                    |
+| **Cosmos DB**           | Microsoft.Azure.Cosmos               | `Microsoft.Azure.Cosmos`               | NoSQL database         | Globally distributed apps                                |
+| **Table Storage**       | Azure.Data.Tables                    | `Azure.Data.Tables`                    | Key-value storage      | Lightweight structured data                              |
+| **Key Vault (Secrets)** | Azure.Security.KeyVault.Secrets      | `Azure.Security.KeyVault.Secrets`      | Secret management      | Connection strings, API keys                             |
+| **Key Vault (Keys)**    | Azure.Security.KeyVault.Keys         | `Azure.Security.KeyVault.Keys`         | Key management         | Encryption, signing                                      |
+| **Key Vault (Certs)**   | Azure.Security.KeyVault.Certificates | `Azure.Security.KeyVault.Certificates` | Certificate management | TLS/SSL certificates                                     |
+| **App Configuration**   | Azure.Data.AppConfiguration          | `Azure.Data.AppConfiguration`          | Central config         | Feature flags, app settings                              |
+| **Azure Functions**     | Microsoft.Azure.Functions.Worker     | `Microsoft.Azure.Functions.Worker`     | Serverless apps        | Event-driven functions (.NET isolated)                   |
+| **App Insights**        | Azure.Monitor.OpenTelemetry.Exporter | `Azure.Monitor.OpenTelemetry.Exporter` | Telemetry              | Logs, metrics, traces                                    |
+| **Search**              | Azure.Search.Documents               | `Azure.Search.Documents`               | Search indexing        | Full-text search                                         |
+| **Communication**       | Azure.Communication.Email / SMS      | `Azure.Communication.*`                | Messaging              | Email, SMS, voice                                        |
+
+- If you get error 403 [Unatuhorized permission] when you try to access Az service from C# client, that's because have not assigned the correct role to the user.
+  Ex: If need to Read blob storage details, should have the role Storage Data Reader.
+
+      | Scenario           | Required Role                     |
+
+  | ------------------ | --------------------------------- |
+  | Read blobs | **Storage Blob Data Reader** |
+  | Read + Write blobs | **Storage Blob Data Contributor** |
+  | Full control | **Storage Blob Data Owner** |

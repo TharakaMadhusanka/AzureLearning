@@ -47,7 +47,6 @@
 - At least one rule is required in a policy.
 - can define up to 100 rules in a policy
 - Rule Params
-
   - Name | string | required | A rule name can include up to 256 alphanumeric characters. Rule name is case-sensitive. It must be unique within a policy.
   - enabled | boolean | optional | An optional boolean to allow a rule to be temporarily disabled. Default value is true.
   - type | enum | optional | current valid type is Lifecycle required
@@ -80,7 +79,6 @@
 - Can set metadata either using SDK or direct url
 
 1. Using URL
-
    1. Setting metadata header on Container
       PUT https://myaccount.blob.core.windows.net/mycontainer?comp=metadata&restype=container
    2. Setting metadata header on Blob
@@ -203,7 +201,6 @@ Config:
 ### Premium Storage
 
 1. Premium block blobs
-
    - Supports Blob storage, Data Lake
    - LRS & ZRS
    - Usage:
@@ -211,7 +208,6 @@ Config:
      - Recommended for scenarios with high transaction rates or that use smaller objects or require consistently low storage latency.
 
 2. Premium Page Blob
-
    1. Page Blobs only
    2. LRS & ZRS
    3. Premium storage account type for page blobs only.
@@ -330,17 +326,13 @@ Config:
 - Blob is in Archive tier means it is offline, hence, cannot be read or modified.
 - If need to read it again, it needs to be rehydrated to an online tier either to HOT or COOL ||
 - 2 options to rehydrate
-
   1. Copy an archived blob to an online tie: do this using `Copy Blob` or `Copy Blob from URL` operation
-
   - When you copy an archived blob to a new blob in an online tier, the source blob remains unmodified in the archive tier.
   - You must copy the archived blob to a new blob with a different name or to a different container.
   - You can't overwrite the source blob by copying to the same blob.
-
   2. Change a blob's access tier to an online tier: change the tier using `Set Blob Tier` operation.
 
 - To set the rehydrate priority can set the header `x-ms-rehydrate-priority`
-
   - Options
     - Standard Priority: rehydration request is processed in the order it was recieved and might take it up to 15 hours.
     - High Priority: rehydration request is prioritized over standard priority requests and might complete in under one hour for objects under 10 GB in size.
@@ -352,7 +344,6 @@ Qn: What will happen if delete blob before minimum retain period from a tier?
 - Blob containers, by default, do not permit anonymous access to their content.
 - When storage account key access is disabled, any requests to the account that are authorized with Shared Key, including shared access signatures (SAS), will be denied. Client applications that currently access the storage account using shared key will no longer work.
 - Hierarchical namespace, complemented by Data Lake Storage Gen2 endpoint, enables file and directory semantics, accelerates big data analytics workloads, and enables access control lists (ACLs)
-
   - SFTP can only be enabled for hierarchical namespace accounts
   - To enable NFS v3 'hierarchical namespace' must be enabled.
 
@@ -395,14 +386,12 @@ Qn: What will happen if delete blob before minimum retain period from a tier?
 1. Blob Snapshot
 
 - Creates a read-only copy of a blob at a moment in time.
-
   - Manual
   - Read-only
   - stored as delta
   - you manage clean up
 
 - Use when:
-
   - Before modifying a critical file
   - Manual rollback
 
@@ -419,7 +408,6 @@ Qn: What will happen if delete blob before minimum retain period from a tier?
 3. Soft Delete
 
 - Allows restoring deleted blobs.
-
   - Time-based retention
   - Blob or Container level
   - Deleted data is hidden but recoverable
@@ -431,7 +419,6 @@ Qn: What will happen if delete blob before minimum retain period from a tier?
 4. Point-in-Time Restore (PITR)
 
 - This is enterprise-grade ransomware recovery.
-
   - Restore entire storage account
   - Choose any time within last 1–365 days
   - Restores all containers/blobs to that time
@@ -451,7 +438,6 @@ This is the “NUCLEAR ROLLBACK BUTTON”.
 5. Change Feed
 
 - Immutable log of every change that happened in your storage account.
-
   - Blob created
   - Modified
   - Deleted
@@ -489,3 +475,31 @@ This is the “NUCLEAR ROLLBACK BUTTON”.
 | Delete folder          | Soft Delete |
 | Ransomware attack      | PITR        |
 | Audit who deleted what | Change Feed |
+
+## C# Blob SDK
+
+1.  BlobClient
+    1. Allows you to manipulate Azure storage blobs.
+
+2.  BlobClientOptions
+    1. Provides the client configuration options for connecting to Azure Blob Storage.
+
+3.  BlobContainerClient
+    1. Allows you to manipulate Azure Storage containers and their blobs.
+
+4.  BlobServiceClient
+    1.            The BlobServiceClient allows you to manipulate Azure Storage service resources like Account, Container, Blob etc. and blob containers. The storage account provides the top-level namespace for the Blob service.
+
+5.  BlobUriBuilder
+    1.  The BlobUriBuilder class provides a convenient way to modify the contents of a Uri instance to point to different Azure Storage resources like an account, container, or blob.
+
+Main C# Nuggets/ Libraries
+
+1. Azure.Storage.Blobs - Consists BlobClient, BlobContainers etc.
+   1. Contains primary classes that can use to operate on the service, containers & blobs.
+2. Azure.Storage.Blobs.Specialized- Contains classes that you can use to perform operations specific to a blob type, such as block blobs.
+3. Azure.Storage.Blobs.Models: All other utility classes, structures, and enumeration types.
+
+Library Hierarchy
+
+- ServiceClient [Storage Account] --> ContainerClient [Container] --> BlobClient [Blob]

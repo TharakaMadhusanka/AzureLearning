@@ -170,3 +170,33 @@ read`
 az storage message get --queue-name outqueue -o tsv --query [].{Message:content} > %TEMP%out.b64 && certutil -decode -f %TEMP%out.b64 %TEMP%out.txt > NUL && type %TEMP%out.txt && del %TEMP%out.b64 %TEMP%out.txt /q`
 
 Note - After you execute `az storage message get`, the message is removed from the queue. If there was only one message in outqueue, you won't retrieve a message when you run this command a second time and instead get an error.
+
+32. Create Resource Group
+
+`az group create --location <location> --name <name>`
+
+33. Create Storage Account
+
+`az storage account create --name <name> --location <location> --sku <sku> `
+
+34. Assign Role to Storage [follow the same for any resource]
+
+`az role assignment create --assignee $userPrincipal \
+    --role "Storage Blob Data Owner" \
+    --scope $resourceID`
+
+35. Get User Principal
+
+`az rest --method GET --url https://graph.microsoft.com/v1.0/me \
+    --headers 'Content-Type=application/json' \
+    --query userPrincipalName --output tsv`
+
+36. Get ResourceId
+
+`az storage account show --name stkalum --resource-group myresourcegroup2 --query id`
+
+###### az storage account show --name stkalum --resource-group myresourcegroup2 - this is to get complete information list for the storage account
+
+37. Get Permission list in App
+
+`az ad app permission list --id <appId>`

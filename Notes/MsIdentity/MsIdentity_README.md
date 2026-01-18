@@ -3,11 +3,8 @@
 - The Microsoft identity platform helps you build applications your users and customers can sign in to using their Microsoft identities or social accounts, and provide authorized access to your own APIs or Microsoft APIs like Microsoft Graph.
 -
 - Few Components in Microsoft Identity Platform
-
   1. OAuth 2.0 and OpenID Connect standard-compliant authentication service
-
      1. enabling developers to authenticate several identity types, including:
-
      - Work or school accounts, provisioned through Microsoft Entra ID
      - Personal Microsoft account, like Skype, Xbox, and Outlook.com
      - Social or local accounts, by using Azure Active Directory B2C
@@ -20,6 +17,8 @@
   5. Application configuration API and PowerShell - Programmatic configuration of your applications through the Microsoft Graph API and PowerShell so you can automate your DevOps tasks.
 
 **Service Principal**
+
+- A service principal is an identity used by applications or services, **not humans**, to access Azure resources securely.
 
 - To delegate Identity and Access Management functions to Microsoft Entra ID, an application must be registered with a Microsoft Entra tenant.
 - When you register an app in the Azure portal, you choose whether it is:
@@ -41,38 +40,100 @@
 - An application object is used as a template or blueprint to create one or more service principal objects.
 - A service principal is created in every tenant where the application is used.
 - The application object describes three aspects of an application:
-
   - How the service can issue tokens in order to access the application.
   - Resources that the application might need to access.
   - The actions that the application can take.
 
 - To access reosource protected by MS Entra, the entity which requests the resource should present security principal, either user [user principal] or application [service principal].
-
   - The security principal defines the access policy and permissions for the user/application in the Microsoft Entra tenant.
 
 - There are 3 type of service principal
+  1. Application [Access for Non Home Tenants] - this type of service principal is the local representation, or application instance, of a global application object in a single tenant or directory. - A service principal is created in each tenant where the application is used, and references the globally unique app object. - The service principal object defines what the app can actually do in the specific tenant, who can access the app, and what resources the app can access.
 
-  1. Application [Access for Non Home Tenants]
+##### Most common for non-Azure or cross-tenant apps
 
-     - this type of service principal is the local representation, or application instance, of a global application object in a single tenant or directory.
-     - A service principal is created in each tenant where the application is used, and references the globally unique app object.
-     - The service principal object defines what the app can actually do in the specific tenant, who can access the app, and what resources the app can access.
+_How it works_
 
-  2. Managed Identity [Access for Azure Compute Resources, VM, Functions etc.]
+- You register an application in Entra ID
+- Azure creates a service principal
+- App authenticates using:
+  Client secret OR
+  Certificate
 
-     - This type of service principal is used to represent a managed identity.
-     - _Managed identities provide an identity for **applications** to use when connecting to resources that support Microsoft Entra authentication._
-     - When a managed identity is enabled, a service principal representing that managed identity is created in your tenant.
-     - Service principals representing managed identities can be granted access and permissions, but can't be updated or modified directly.
+Used when
 
-  3. Legacy [Access from Legacy Apps]
+- App runs outside Azure
+- Multi-tenant SaaS apps
+- CI/CD pipelines
 
-  - This type of service principal represents a legacy app, which is an app created before app registrations were introduced or an app created through legacy experiences.
-    - A legacy service principal can have:
-      - credentials
-      - service principal names
-      - reply URLs
-        and other properties that an authorized user can edit, but doesn't have an associated app registration.
+2. Managed Identity [Access for Azure Compute Resources, VM, Functions etc.]
+   - This type of service principal is used to represent a managed identity.
+   - _Managed identities provide an identity for **applications** to use when connecting to resources that support Microsoft Entra authentication._
+   - When a managed identity is enabled, a service principal representing that managed identity is created in your tenant.
+   - Service principals representing managed identities can be granted access and permissions, but can't be updated or modified directly.
+
+##### Best and safest option inside Azure
+
+_How it works_
+
+- Azure creates & manages the service principal
+- App requests tokens via IMDS
+- No secrets in code or config
+
+- Types
+  - System-assigned (tied to resource)
+  - User-assigned (reusable)
+
+1. Legacy [Access from Legacy Apps]
+
+- This type of service principal represents a legacy app, which is an app created before app registrations were introduced or an app created through legacy experiences.
+  - A legacy service principal can have:
+    - credentials
+    - service principal names
+    - reply URLs
+      and other properties that an authorized user can edit, but doesn't have an associated app registration.
+
+###### Older identity model
+
+- Characteristics
+  - Created via older Azure AD APIs
+  - Manual secrets
+  - Limited capabilities
+
+❌ Not recommended
+❌ Avoid in new designs
+
+📌 Appears only in existing/older environments
+
+---
+
+- Application → App identity you manage (client secret/cert)
+- Managed Identity → Azure-managed identity (no secrets)
+- Legacy → Older Azure AD identities (avoid for new apps)
+
+| Feature                  | **Application**             | **Managed Identity** | **Legacy**             |
+| ------------------------ | --------------------------- | -------------------- | ---------------------- |
+| Created by               | App registration            | Azure automatically  | Azure AD (old model)   |
+| Secret management        | ❌ You manage secrets/certs | ✅ Azure manages     | ❌ Manual              |
+| Credential type          | Client secret / certificate | Token via IMDS       | Various legacy methods |
+| Runs in Azure            | Optional                    | **Required**         | Optional               |
+| Human usable             | ❌ No                       | ❌ No                | ❌ No                  |
+| Tenant support           | Single / Multi-tenant       | Single tenant        | Single tenant          |
+| Rotation needed          | ✅ Yes                      | ❌ No                | ✅ Yes                 |
+| Recommended for new apps | ✅ Yes                      | ✅ **Strongly**      | ❌ No                  |
+
+| Question Clue              | Choose               |
+| -------------------------- | -------------------- |
+| No secrets, Azure hosted   | **Managed Identity** |
+| App runs outside Azure     | **Application**      |
+| Multi-tenant access        | **Application**      |
+| Old system, existing setup | **Legacy**           |
+
+### Application → You manage secrets
+
+### Managed Identity → Azure manages identity
+
+### Legacy → Don’t use for new apps
 
 ![Important]
 The application object is the global representation of your application for use across all tenants the service principal is the local representation for use in a specific tenant.
@@ -91,14 +152,11 @@ The application object is the global representation of your application for use 
 - In requests to the authorization, token or consent endpoints for the Microsoft Identity platform, if the resource identifier is omitted in the scope parameter, the resource is assumed to be Microsoft Graph. For example, scope=User.Read is equivalent to https://graph.microsoft.com/User.Read.
 
 - The Microsoft identity platform supports two types of permissions:
-
   1. delegated access - are used by the apps that have signed-in user present. [with user's prescense]
   2. app-only access permission - are used by apps that run without a signed-in user present [with no user]
 
 - Consent Types [3 types]
-
   - Static User Content | you must specify all the permissions it needs in the app's configuration in the Azure portal.
-
     - App requests a fixed set of permissions
     - Permissions are defined at app registration time
     - User is asked to consent once
@@ -107,7 +165,6 @@ The application object is the global representation of your application for use 
       - Mail.Read
 
     When to use
-
     - Simple apps
     - Known permission set
     - Internal line-of-business apps
@@ -163,7 +220,6 @@ What it means
 - Required for high-privilege permissions
 
   Example permissions
-
   - Directory.Read.All
   - User.Read.All
   - Group.ReadWrite.All
@@ -184,6 +240,18 @@ Background services
 | Dynamic      | User         | Runtime       | Feature-based |
 | Admin        | Admin        | Once          | Tenant-wide   |
 
+| Consent Type      | Who Grants Consent | Scope                   | Typical Use Case                             | Key Exam Clues                                   |
+| ----------------- | ------------------ | ----------------------- | -------------------------------------------- | ------------------------------------------------ |
+| **Static**        | User or Admin      | All permissions upfront | Traditional/internal apps                    | “Permissions are known upfront”                  |
+| **Incremental**   | User               | Requested as needed     | Modern apps, progressive permission requests | “Permissions requested gradually/as needed”      |
+| **Dynamic**       | User               | Runtime / conditional   | Rare / advanced                              | “Permissions requested during execution/runtime” |
+| **Admin Consent** | Admin only         | Tenant-wide             | Enterprise apps, high-privilege APIs         | “Tenant-wide approval required”                  |
+
+- Static → all permissions declared at registration, one-time consent
+- Incremental → only minimal permissions at first, requests more later
+- Dynamic → permissions requested dynamically during runtime
+- Admin consent → required for high privilege or enterprise-wide access
+
 - In an OpenID Connect or OAuth 2.0 authorization request, an app can request the permissions it needs by using the scope query parameter.
 
 `GET https://login.microsoftonline.com/common/oauth2/v2.0/authorize?
@@ -199,9 +267,7 @@ https%3A%2F%2Fgraph.microsoft.com%2Fmail.send
 ---
 
 - Conditional Access
-
   - The Conditional Access feature in Microsoft Entra ID offers one of several ways that you can use to secure your app and protect a service.
-
     1. MFA
     2. Allowing only intune enrolled devices to access specific services
     3. Restricting user locations and IP Address
@@ -218,7 +284,6 @@ https%3A%2F%2Fgraph.microsoft.com%2Fmail.send
 
 - enables developers to acquire security tokens from the Microsoft identity platform to authenticate users and access secured web APIs.
 - (MSAL) defines two types of clients; public clients and confidential clients.
-
   - public client -
     - run on devices, such as desktop, browserless APIs, mobile or client-side browser apps. They can't be trusted to safely keep application secrets, so they can only access web APIs on behalf of the user.
     - they also only support public client flows and can't hold configuration-time secrets, they can't have client secrets.
@@ -333,7 +398,6 @@ Ex: Graph URL
 
 - The Microsoft Graph SDKs are designed to simplify building high-quality, efficient, and resilient applications that access Microsoft Graph.
 - The SDKs include two components:
-
   - a service library
     - The service library contains models and request builders that are generated from Microsoft Graph metadata to provide a rich and discoverable experience.
   - a core library
@@ -351,3 +415,25 @@ The HTTP Authorization request header, as a Bearer token
 The graph client constructor, when using a Microsoft Graph client library
 
 - Evolvable enumerations: Evolvable enums are a mechanism that Microsoft Graph API uses to add new members to existing enumerations without causing a breaking change for applications.
+
+- OAuth 2.0 is a method through which a third-party app can access web-hosted resources on behalf of a user.
+
+- The implicit grant allows an application to request a token directly from the authorization endpoint. 
+  - It is only recommended for browser-based single-page applications (SPAs).​
+
+#### App Registration Steps (Portal)
+
+1. Microsoft Entra ID → App registrations → New registration
+   Fill:
+   Name
+   Supported account types
+   Redirect URI (optional)
+2. Configure Authentication (web, SPA, public client)
+3. Configure API permissions (Delegated / Application)
+4. Add Credentials (client secret / certificate)
+5. Assign RBAC to resources for data-plane access
+
+Memory hook:
+App Registration → App Object + Service Principal → Configure Auth + Permissions → RBAC
+
+### In Microsoft Entra ID / Azure AD, you don’t explicitly “set” a consent type like incremental or dynamic in a dropdown — it’s determined by how your app requests permissions and how consent is granted.
