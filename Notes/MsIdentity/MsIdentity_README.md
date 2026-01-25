@@ -338,6 +338,89 @@ Shared Access Singature Components
 1. ![With Front End Proxy Service](image-1.png)
 2. ![With Ligh Weight Service](image-2.png)
 
+| SAS Type                | Can create in Portal? | Notes                               |
+| ----------------------- | --------------------- | ----------------------------------- |
+| **Service SAS**         | ✅ Yes                | Most common portal SAS              |
+| **Account SAS**         | ✅ Yes                | From “Shared access signature” page |
+| **User Delegation SAS** | ❌ No                 | Must use SDK / CLI with Azure AD    |
+
+| SAS Type                | Created Using       | Auth Method                               | Scope                        |
+| ----------------------- | ------------------- | ----------------------------------------- | ---------------------------- |
+| **User Delegation SAS** | Microsoft Entra ID  | Azure AD token                            | Blob only/ Data Lake Storage |
+| **Service SAS**         | Storage Account Key | One service (Blob / Queue / File / Table) |                              |
+| **Account SAS**         | Storage Account Key | Entire account (all services)             |                              |
+
+#### Create User Delegation SAS
+
+`BlobServiceClient serviceClient =
+new BlobServiceClient(new Uri("https://mystorage.blob.core.windows.net"),
+new DefaultAzureCredential());
+
+// Step 1: Get User Delegation Key from Azure AD
+UserDelegationKey key = await serviceClient.GetUserDelegationKeyAsync(
+DateTimeOffset.UtcNow,
+DateTimeOffset.UtcNow.AddHours(1));
+
+// Step 2: Build SAS
+BlobSasBuilder sasBuilder = new BlobSasBuilder
+{
+BlobContainerName = "mycontainer",
+BlobName = "file.txt",
+Resource = "b",
+ExpiresOn = DateTimeOffset.UtcNow.AddHours(1)
+};
+
+sasBuilder.SetPermissions(BlobSasPermissions.Read);
+
+// Step 3: Generate SAS
+Uri sasUri = new BlobClient(new Uri("https://mystorage.blob.core.windows.net/mycontainer/file.txt"))
+.GenerateSasUri(sasBuilder, key);
+`
+
+### Create Service Delegation SAS
+
+`StorageSharedKeyCredential credential =
+new StorageSharedKeyCredential("accountName", "accountKey");
+
+BlobSasBuilder sasBuilder = new BlobSasBuilder
+{
+BlobContainerName = "mycontainer",
+BlobName = "file.txt",
+Resource = "b",
+ExpiresOn = DateTimeOffset.UtcNow.AddHours(1)
+};
+
+sasBuilder.SetPermissions(BlobSasPermissions.Read);
+
+Uri sasUri = new BlobClient(
+new Uri("https://account.blob.core.windows.net/mycontainer/file.txt"),
+credential)
+.GenerateSasUri(sasBuilder);
+`
+
+### Create Account SAS
+
+`AccountSasBuilder sasBuilder = new AccountSasBuilder
+{
+Services = AccountSasServices.Blobs | AccountSasServices.Files,
+ResourceTypes = AccountSasResourceTypes.Service |
+AccountSasResourceTypes.Container |
+AccountSasResourceTypes.Object,
+ExpiresOn = DateTimeOffset.UtcNow.AddHours(1),
+Protocol = SasProtocol.Https
+};
+
+sasBuilder.SetPermissions(AccountSasPermissions.Read |
+AccountSasPermissions.Write);
+
+StorageSharedKeyCredential credential =
+new StorageSharedKeyCredential("accountName", "accountKey");
+
+string sasToken = sasBuilder.ToSasQueryParameters(credential).ToString();
+
+string url = $"https://account.blob.core.windows.net/?{sasToken}";
+`
+
 **Stored Access Policy**
 
 - A stored access policy provides an extra level of control over service-level shared access signatures (SAS) on the server side.
@@ -437,3 +520,16 @@ Memory hook:
 App Registration → App Object + Service Principal → Configure Auth + Permissions → RBAC
 
 ### In Microsoft Entra ID / Azure AD, you don’t explicitly “set” a consent type like incremental or dynamic in a dropdown — it’s determined by how your app requests permissions and how consent is granted.
+
+### MSAL Error
+
+Microsoft.Identity.Client.MsalUiRequiredException: 'No account or login hint was passed to the AcquireTokenSilent call. '
+
+This is because application exception indicates that the user is not authenticated or the token cache is empty when the application attempts to acquire a token silently.
+
+- Solution: The recommended solution is to attempt to acquire a token silently and, if that fails, fall back to an interactive authentication method.
+
+`// A MsalUiRequiredException happened on AcquireTokenSilent.
+    // This indicates that the user needs to interactively sign in.
+    AuthenticationResult result = await app.AcquireTokenInteractive(scopes)
+                                          .ExecuteAsync();`

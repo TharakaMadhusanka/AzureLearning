@@ -1,6 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using Azure.Identity;
 using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 
 Console.WriteLine("Hello, World!");
 
@@ -53,3 +54,16 @@ blob.SetMetadata(new Dictionary<string, string>
 
 props = blob.GetProperties();
 Console.WriteLine($"Blob Size: {props.Value.ContentLength} bytes");
+
+// Create Blob Policy
+BlobSignedIdentifier identifier = new BlobSignedIdentifier
+{
+    Id = "stored access policy identifier",
+    AccessPolicy = new BlobAccessPolicy
+    {
+        ExpiresOn = DateTimeOffset.UtcNow.AddHours(1),
+        Permissions = "rw"
+    }
+};
+
+containerClient.SetAccessPolicy(permissions: new BlobSignedIdentifier[] { identifier });

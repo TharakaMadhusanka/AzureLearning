@@ -488,7 +488,7 @@ This is the “NUCLEAR ROLLBACK BUTTON”.
     1. Allows you to manipulate Azure Storage containers and their blobs.
 
 4.  BlobServiceClient
-    1.            The BlobServiceClient allows you to manipulate Azure Storage service resources like Account, Container, Blob etc. and blob containers. The storage account provides the top-level namespace for the Blob service.
+    1.                 The BlobServiceClient allows you to manipulate Azure Storage service resources like Account, Container, Blob etc. and blob containers. The storage account provides the top-level namespace for the Blob service.
 
 5.  BlobUriBuilder
     1.  The BlobUriBuilder class provides a convenient way to modify the contents of a Uri instance to point to different Azure Storage resources like an account, container, or blob.
@@ -503,3 +503,44 @@ Main C# Nuggets/ Libraries
 Library Hierarchy
 
 - ServiceClient [Storage Account] --> ContainerClient [Container] --> BlobClient [Blob]
+
+## Ways to Lock / Protect Blob Data
+
+| Feature                           | Prevents Delete | Prevents Modify | Typical Use                 |
+| --------------------------------- | --------------- | --------------- | --------------------------- |
+| **Blob Soft Delete**              | ✅ Recoverable  | ❌ No           | Accidental deletes          |
+| **Blob Versioning**               | ❌              | ❌              | Restore previous versions   |
+| **Snapshots**                     | ❌              | ❌              | Point-in-time backup        |
+| 🔒 **Immutability Policy (WORM)** | ✅ Yes          | ✅ Yes          | Compliance, legal, audit    |
+| 🔒 **Legal Hold**                 | ✅ Yes          | ✅ Yes          | Investigations, regulations |
+
+| Question Says…                      | Correct Feature            |
+| ----------------------------------- | -------------------------- |
+| Prevent deleting storage account    | Resource Lock              |
+| Prevent deleting blobs accidentally | Soft Delete                |
+| Restore old versions                | Versioning                 |
+| Prevent modification AND deletion   | ✅ **Immutability policy** |
+| Compliance / WORM storage           | ✅ **Immutability policy** |
+| Legal investigation                 | ✅ **Legal Hold**          |
+
+## Legal Hold vs Immutability Policy (WORM)
+
+| Feature                | **Immutability Policy**                         | **Legal Hold**                     |
+| ---------------------- | ----------------------------------------------- | ---------------------------------- |
+| Lock type              | Time-based lock                                 | Indefinite lock                    |
+| Duration               | Fixed retention period (e.g., 30 days, 7 years) | Until explicitly removed           |
+| Main purpose           | Compliance & records retention                  | Legal / investigation hold         |
+| Automatically unlocks? | ✅ Yes (after time expires)                     | ❌ No (manual removal required)    |
+| Typical industries     | Finance, healthcare, audit logs                 | Courts, litigation, investigations |
+
+| Question Scenario                | Correct Answer      |
+| -------------------------------- | ------------------- |
+| Retain data for 7 years          | Immutability policy |
+| Compliance / WORM storage        | Immutability policy |
+| Automatically release after time | Immutability policy |
+| Court case / litigation          | Legal hold          |
+| Investigation                    | Legal hold          |
+| Lock until manually removed      | Legal hold          |
+
+Immutability = Time-based compliance lock  
+Legal Hold = Legal case, indefinite lock

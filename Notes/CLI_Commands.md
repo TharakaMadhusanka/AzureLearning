@@ -200,3 +200,41 @@ Note - After you execute `az storage message get`, the message is removed from t
 37. Get Permission list in App
 
 `az ad app permission list --id <appId>`
+
+38. Assign Virtual Machine Contributor role to enable system-assigned managed identity during creation of virtual machine
+
+`az vm create --resource-group myResourceGroup \ 
+    --name myVM --image win2016datacenter \ 
+    --generate-ssh-keys \ 
+    --assign-identity \ 
+    --role contributor \
+    --scope mySubscription \
+    --admin-username azureuser \ 
+    --admin-password myPassword12`
+
+39. To assign system-assigned managed identity to existing VM
+
+`az vm identity assign -g myResourceGroup -n myVm`
+
+40. Create a user-assigned managed identity
+
+`az identity create -g myResourceGroup -n myUserAssignedIdentity`
+
+41. Assign a user-assigned managed identity during the creation of an Azure virtual machine
+
+`az vm create \
+--resource-group <RESOURCE GROUP> \
+--name <VM NAME> \
+--image Ubuntu2204 \
+--admin-username <USER NAME> \
+--admin-password <PASSWORD> \
+--assign-identity <USER ASSIGNED IDENTITY NAME> \
+--role <ROLE> \
+--scope <SUBSCRIPTION>`
+
+42. Assign a user-assigned managed identity to an existing Azure virtual machine
+
+`az vm identity assign \
+    -g <RESOURCE GROUP> \
+    -n <VM NAME> \
+    --identities <USER ASSIGNED IDENTITY>`

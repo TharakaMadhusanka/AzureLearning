@@ -1,5 +1,4 @@
 - Azure Event Grid offers flexible message consumption pattern using with the protocols
-
   - HTTP
   - MQTT [ Message Queuing Telemetry Transport]
 
@@ -32,7 +31,6 @@
 - If using push delivery, the event handler is an Azure service, and a managed identity is used to authenticate Event Grid, the managed identity should have an appropriate RBAC role. For example, if sending events to Event Hubs, the managed identity used in the event subscription should be a member of the Event Hubs Data Sender role. [IMPORTANT]
 
 - Azure Event Grid supports two types of event schemas:
-
   - Event Grid event schema
   - Cloud event schema
 
@@ -55,7 +53,6 @@ There are two limits:
 ➡️ Event Grid returns HTTP 413 – Payload Too Large
 
 - 3️⃣ Billing is per 64 KB chunk
-
   - Event Grid charges based on payload size, not just number of events.
   - 1 operation = 64 KB
   - Size is rounded up
@@ -97,20 +94,17 @@ To Note - If Dead-Letter isn't configured for an endpoint, events are dropped wh
 Let's say if the error is 500, then event hub wait for 30s, if after 30s endpoint fails, queued for retry.
 
 - Retry policy
-
   - Customizations can be done by
     - Maximum number of attempts - The value must be an integer between 1 and 30. The default value is 30.
     - Event time-to-live (TTL) - The value must be an integer between 1 and 1440. The default value is 1440 minutes
 
 - Output Batching | Batch Delivery
-
   - default is off
   - 1. Max events per batch - Maximum number of events Event Grid delivers per batch.
   - 2. Preferred batch size in kilobytes
     - Target ceiling for batch size in kilobytes.
 
 - Dead Letter Events
-
   - When Event Grid can't deliver an event within a certain time period or after trying to deliver the event a specific number of times, it can send the undelivered event to a storage account.
   - This process is known as dead-lettering.
   - Event Grid dead-letters an event when one of the following conditions is met.
@@ -122,7 +116,6 @@ Let's say if the error is 500, then event hub wait for 30s, if after 30s endpoin
 - If the dead-letter location is unavailable for _four hours_, the event is dropped.
 
 - Custom Delivery Properties
-
   - can set up to 10 headers when creating an event subscription
   - Each header value shouldn't be greater than 4,096 bytes.
   - can set custom headers on the events that are delivered to the following destinations:
@@ -136,12 +129,10 @@ Let's say if the error is 500, then event hub wait for 30s, if after 30s endpoin
 
 - Event Grid uses Azure role-based access control
 - Event Grid provides the following built-in roles:
-
   - ![Built in roles](image-9.png)
   - These roles are focused on event subscriptions and don't grant access for actions such as creating topics.
 
 - Event Grid can deliver events to:
-
   - WebHook (HTTP endpoint)
   - Event Hub
   - Storage Queue
@@ -149,7 +140,6 @@ Let's say if the error is 500, then event hub wait for 30s, if after 30s endpoin
   - Azure Function
 
 - creating an Event Grid subscription with non-WebHook handlers requires _Microsoft.EventGrid/EventSubscriptions/Write_ permission on the event source.
-
   - ✅ Scenario 1: WebHook
     - Source: Storage Account
     - Handler: WebHook
@@ -170,13 +160,11 @@ Let's say if the error is 500, then event hub wait for 30s, if after 30s endpoin
 - Webhooks are one of the many ways to receive events from Azure Event Grid.
 - When a new event is ready, Event Grid service POSTs an HTTP request to the configured endpoint with the event in the request body.
 - When you use any of the following three Azure services, the Azure infrastructure automatically handles this authentication:
-
   - Azure Logic Apps with Event Grid Connector
   - Azure Automation via webhook
   - Azure Functions with Event Grid Trigger
 
 - If you're using any other type of endpoint, such as an HTTP trigger based Azure function, your endpoint code needs to participate in a validation handshake with Event Grid.
-
   - Event Grid supports two ways of validating the subscription.
     1. _Synchronous handshake:_
        1. At the time of event subscription creation, Event Grid sends a subscription validation event to your endpoint.
@@ -188,29 +176,24 @@ Let's say if the error is 500, then event hub wait for 30s, if after 30s endpoin
 
 - 🔐 Event Grid Manual Validation Handshake
   📌 When it applies
-
   - API version: 2018-05-01-preview or later
   - Scenario: Creating Event Grid subscriptions via SDK / ARM
 
 - 🧠 How it works (Memory flow: POST → GET → OK)
 
   1️⃣ Validation event sent
-
   - Event Grid sends a SubscriptionValidationEvent
   - Event data contains a validationUrl
 
   2️⃣ Your endpoint must
-
   - Return HTTP 200 to accept the POST
   - (No validation response required immediately)
 
   3️⃣ Manual validation
-
   - You must GET the validationUrl
   - Can use browser or REST client
 
   4️⃣ Time limit
-
   - URL valid for 5 minutes
   - Subscription state = AwaitingManualAction
 
@@ -223,7 +206,6 @@ Let's say if the error is 500, then event hub wait for 30s, if after 30s endpoin
 - Using self-signed certificates for validation isn't supported. Use a signed certificate from a commercial certificate authority (CA) instead. [IMPORTANT]
 
 - When creating an event subscription, you have three options for filtering:
-
   - Event types
   - Subject begins with or ends with
   - Advanced fields and operators
@@ -245,7 +227,6 @@ Let's say if the error is 500, then event hub wait for 30s, if after 30s endpoin
 }`
 
 - The JSON syntax for using advanced filters is:
-
   - In advanced filtering, you specify the: - operator type - The type of comparison. - key - The field in the event data that you're using for filtering. It can be a number, boolean, or string. - value or values - The value or values to compare to the key.
     `"filter": {
   "advancedFilters": [
@@ -314,7 +295,6 @@ Scale processing application
 - Azure Event Hubs supports both Microsoft Entra ID and shared access signatures (SAS) to handle both authentication and authorization.
 
 - Azure built-in roles for authorizing access to Event Hubs data using Microsoft Entra ID and OAuth:
-
   - Azure Event Hubs Data Owner: Use this role to give complete access to Event Hubs resources.
   - Azure Event Hubs Data Sender: Use this role to give send access to Event Hubs resources.
   - Azure Event Hubs Data Receiver: Use this role to give receiving access to Event Hubs resources.
@@ -417,7 +397,6 @@ cancellationSource.CancelAfter(TimeSpan.FromSeconds(45));
 [Important] It is important to note that this approach to consuming is intended to improve the experience of exploring the Eve
 
 4. Read events from an Event Hubs partition -->
-
    1. read from a given Partition --> ReadEventsFromPartitionAsync()
 
 5. Process Events using an Event Processor Client
@@ -559,3 +538,5 @@ Ingest millions of device messages per second
   | Filtering | Supports **subject and event type filters** |
   | Scaling | Millions of events per second |
   | Replay | Supports event replay within the **retention window** (default 24h, can extend) |
+
+### For CloudEvents schema, that header value is "content-type":"application/cloudevents+json; charset=utf-8". For Event Grid schema, that header value is "content-type":"application/json; charset=utf-8"
