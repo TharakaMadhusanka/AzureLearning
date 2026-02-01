@@ -61,10 +61,8 @@ Azure supports two types of queue mechanisms:
 - Service Bus Premium is fully compliant with the Java/Jakarta EE Java Message Service (JMS) 2.0 API.
 
 - You can specify two different modes in which Service Bus receives messages: Receive and delete or Peek lock.
-
   - Recieve & Delete | Suitable for application that can tolerate missing messages
   - Peek lock | Suitable for applications that cannot tolerate missing messages
-
     - In this mode, the receive operation becomes two-stage, which makes it possible to support applications that can't tolerate missing messages.
 
     Finds the next message to be consumed, locks it to prevent other consumers from receiving it, and then, return the message to the application.
@@ -72,6 +70,10 @@ Azure supports two types of queue mechanisms:
     After the application finishes processing the message, it requests the Service Bus service to complete the second stage of the receive process. Then, the service marks the message as consumed.
 
     If the application is unable to process the message for some reason, it can request the Service Bus service to abandon the message. Service Bus unlocks the message and makes it available to be received again, either by the same consumer or by another competing consumer. Secondly, there's a timeout associated with the lock. If the application fails to process the message before the lock timeout expires, Service Bus unlocks the message and makes it available to be received again.
+
+# This is someting to Remember
+
+Ex: Application should tolerate the messages, as in application is processing the critical information cannot miss the missing messages. Thus, need to use Peek Lock pattern.
 
 | Mode                    | What happens              | Reliability   | Typical use                  |
 | ----------------------- | ------------------------- | ------------- | ---------------------------- |
@@ -109,7 +111,6 @@ Queue -> Read -> DELETE -> Process
 - The user properties are a collection of key-value pairs defined and set by the application.
 
 - A subset of the broker properties, specifically
-
   - To, ReplyTo, ReplyToSessionId, MessageId, CorrelationId, and SessionId, help applications route messages to particular destinations.
 
 # Service Bus, Message Routing Patterns
@@ -189,19 +190,16 @@ Clients filter by CorrelationId
 
 - FanOut | One message → many consumers
   Used when
-
   - Multiple systems must react to the same event
   - You want parallel processing
 
   Azure services that do this:
-
   - Service Bus Topics
   - Event Grid
 
 - FanIn | Many responses → one consumer
 
   Used in:
-
   - Multicast Request/Reply
   - Price/availability checks
   - Distributed computations
@@ -238,7 +236,6 @@ Clients filter by CorrelationId
 - Azure.Storage.Queues client library for .NET:
   - This package enables working with Azure Queue Storage for storing messages that accessed by a client.
 - System.Configuration.ConfigurationManager library for .NET:
-
   - This package provides access to configuration files for client applications.
   - Create queue client | retrieves and manipulates queues stored in Azure Queue Storage.
     - `QueueClient queueClient = new QueueClient(connectionString, queueName);`
@@ -263,7 +260,6 @@ Clients filter by CorrelationId
     - Delete()
 
 - RecieveMessages()
-
   - You get the next message in a queue.
   - A message returned from ReceiveMessages becomes invisible to any other code reading messages from this queue.
   - By default, this message stays invisible for 30 seconds.
@@ -274,3 +270,111 @@ Clients filter by CorrelationId
   - Topics and Subscription
   - MEssaging
   - Decouple Application
+
+Normally, a queue works like this:
+
+- Each worker competes for individual messages
+
+But here, the requirement is:
+
+- Each worker competes for an entire stream of related messages
+
+That’s what Service Bus Sessions give you.
+
+1️⃣ “Process messages as parallel long-running streams”
+
+This means:
+
+- Messages are grouped
+- Each group represents a logical workflow / conversation
+
+Processing that group:
+
+- Takes time
+- Has state
+- Must be ordered
+
+Examples of a “stream”:
+
+- Order lifecycle (OrderCreated → OrderPaid → OrderShipped)
+- Chat conversation
+- Payment workflow
+- Saga / long-running business process
+
+2️⃣ “Messages are associated with a stream using the session ID property”
+
+How grouping works:
+
+- Each message has a SessionId
+- All messages with the same SessionId belong to the same stream
+
+3️⃣ “Each node competes for streams, not messages”
+
+This is the key shift.
+
+❌ Without sessions
+Worker A → Message 1
+Worker B → Message 2
+Worker C → Message 3
+
+Messages from the same order could go to different workers → ❌ broken ordering & state.
+
+✅ With sessions
+Worker A → Session order-123 (all messages)
+Worker B → Session order-456
+Worker C → Session order-789
+
+- A worker locks a session
+- Processes all messages in that session in order
+- No other worker can touch that session until released
+
+# Choose Azure Service Bus when you need ordered, transactional, secure, stateful, duplicate-safe messaging without polling.
+
+| Feature               | Description                                                                                                                                                                    |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Message sessions      | To create a first-in, first-out (FIFO) guarantee in Service Bus, use sessions. Message sessions enable exclusive, ordered handling of unbounded sequences of related messages. |
+| Autoforwarding        | Chains a queue or subscription to another queue or topic within the same namespace.                                                                                            |
+| Dead-letter queue     | Service Bus supports a dead-letter queue (DLQ) that holds messages that can't be delivered. Messages can be inspected and reprocessed.                                         |
+| Scheduled delivery    | Allows submitting messages to a queue or topic for delayed processing at a specified time.                                                                                     |
+| Message deferral      | Enables deferring retrieval of a message until later. The message stays in the queue or subscription but is set aside.                                                         |
+| Transactions          | Groups two or more operations into a single execution scope. Supports transactions on a single messaging entity (queue, topic, or subscription).                               |
+| Filtering and actions | Subscribers can define rules to filter which messages they receive from a topic using named subscription rules.                                                                |
+| Autodelete on idle    | Automatically deletes a queue after a specified idle interval (minimum 5 minutes).                                                                                             |
+| Duplicate detection   | Prevents duplicate messages by discarding repeated message IDs within a defined time window.                                                                                   |
+| Security protocols    | Supports Shared Access Signatures (SAS), Role-Based Access Control (RBAC), and Managed Identities.                                                                             |
+| Geo-disaster recovery | Enables continued data processing in another region or datacenter during outages.                                                                                              |
+| Security              | Supports standard AMQP 1.0 and HTTP/REST protocols.                                                                                                                            |
+
+![Recive Modes in Azure Service Bus](image.png)
+
+So azure service bus has mainly 2 modes, Peek & Recieve.
+
+| Mode                 | Deletes Message?      | Lock?  | Retry? | DLQ?   |
+| -------------------- | --------------------- | ------ | ------ | ------ |
+| **Peek**             | ❌ No                 | ❌ No  | ❌ No  | ❌ No  |
+| **ReceiveAndDelete** | ✅ Immediately        | ❌ No  | ❌ No  | ❌ No  |
+| **Peek-Lock**        | ✅ After `Complete()` | ✅ Yes | ✅ Yes | ✅ Yes |
+
+| Feature             | ReceiveAndDelete | Peek    |
+| ------------------- | ---------------- | ------- |
+| Deletes message     | ✅ Immediately   | ❌      |
+| Locks message       | ❌               | ❌      |
+| Supports retries    | ❌               | ❌      |
+| Message loss risk   | ⚠️ High          | ❌ None |
+| Processing messages | ✅               | ❌      |
+| Debug / inspect     | ❌               | ✅      |
+
+| Feature             | Receive (Peek-Lock) | Peek |
+| ------------------- | ------------------- | ---- |
+| Removes message     | ✅ After Complete() | ❌   |
+| Locks message       | ✅                  | ❌   |
+| Supports retry      | ✅                  | ❌   |
+| Affects queue state | ✅                  | ❌   |
+| Used for processing | ✅                  | ❌   |
+| Used for debugging  | ❌                  | ✅   |
+
+## Service Bus does not retain processed messages
+
+## Peek is read-only inspection, not consumption.
+
+## The application code will override template mode.

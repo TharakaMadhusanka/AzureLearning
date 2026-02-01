@@ -488,7 +488,7 @@ This is the “NUCLEAR ROLLBACK BUTTON”.
     1. Allows you to manipulate Azure Storage containers and their blobs.
 
 4.  BlobServiceClient
-    1.                 The BlobServiceClient allows you to manipulate Azure Storage service resources like Account, Container, Blob etc. and blob containers. The storage account provides the top-level namespace for the Blob service.
+    1.                          The BlobServiceClient allows you to manipulate Azure Storage service resources like Account, Container, Blob etc. and blob containers. The storage account provides the top-level namespace for the Blob service.
 
 5.  BlobUriBuilder
     1.  The BlobUriBuilder class provides a convenient way to modify the contents of a Uri instance to point to different Azure Storage resources like an account, container, or blob.
@@ -544,3 +544,41 @@ Library Hierarchy
 
 Immutability = Time-based compliance lock  
 Legal Hold = Legal case, indefinite lock
+
+# Azure Fileshare
+
+Azure File Share is a fully managed file share in the cloud that uses the Server Message Block (SMB) protocol (or NFS for Linux) and can be mounted by:
+
+- Windows, Linux, macOS machines
+- Azure VMs
+- Azure Kubernetes Service (AKS)
+- Azure App Services (for SMB-based access)
+
+It behaves like a network file share, but hosted in Azure.
+
+Key Features
+
+| Feature                | Description                                                                  |
+| ---------------------- | ---------------------------------------------------------------------------- |
+| **SMB/NFS Access**     | Can mount like a network drive using SMB 3.0 (Windows, Linux) or NFS (Linux) |
+| **Fully Managed**      | No need to maintain servers, storage is handled by Azure                     |
+| **Persistent Storage** | Data persists beyond VM/container lifecycle                                  |
+| **Snapshots**          | Supports point-in-time snapshots for backup                                  |
+| **Integration**        | Can be used by VMs, containers, and App Services                             |
+
+Use Cases
+
+1. Lift-and-shift legacy apps
+   1. Apps expecting a traditional file share can just use Azure File Share without code changes.
+
+2. Shared storage for multiple VMs
+   1. Multiple VMs can mount the same file share and read/write files concurrently.
+
+3. Container persistent storage
+   1. AKS / Azure Container Instances can mount Azure File Share to persist data beyond container lifecycle.
+
+4. Backup and file archiving
+   1. Store logs, reports, or configuration files that need persistence.
+
+5. Dev/Test environments
+   Share code or resources across multiple dev/test VMs.

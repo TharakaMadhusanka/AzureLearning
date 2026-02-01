@@ -98,14 +98,12 @@ OS Support
 - Main Pricing Plans
 
 1. Shared Compute
-
    1. Free & Shared
    2. Runs app on the same Azure VM as other App Service, as in, this will run along with other customer's web apps too.
    3. Thus this plan is recommended to use only for dev/ testing.
    4. These tiers allocate CPU quotas to each app that runs on the shared resources, and the resources can't scale out.
 
 2. Dedicated Compute
-
    1. Basic, Standard, Premium, PremiumV2, PremiumV3
    2. Apps run on a dedicated Azure VM, not sharing with other customers.
 
@@ -125,3 +123,25 @@ OS Support
       1. Page Blob
       2. Block blob
       3. file shares
+
+# Azure Service Bus Pricing Plans
+
+| Feature                | Basic         | Standard                         | Premium                               |
+| ---------------------- | ------------- | -------------------------------- | ------------------------------------- |
+| Throughput             | Low           | Variable                         | High                                  |
+| Performance            | N/A           | Variable latency                 | Predictable performance               |
+| Pricing                | Pay as you go | Pay as you go (variable pricing) | Fixed pricing per messaging unit      |
+| Scaling                | N/A           | N/A                              | Ability to scale workload up and down |
+| Message size           | 256 KB        | 256 KB                           | Up to 100 MB                          |
+| Topics & Subscriptions | Not supported | Supported                        | Supported                             |
+| Transactions           | Not supported | Supported                        | Supported                             |
+| Auto-forwarding        | Not supported | Supported                        | Supported                             |
+| Message sessions       | Supported     | Supported                        | Supported                             |
+
+# Azure Container Registry
+
+| Tier     | Description                                                                                                                                                                                                                                                                                                                                                                                 |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Basic    | A cost-optimized entry point for developers learning about Azure Container Registry. Basic registries have the same programmatic capabilities as Standard and Premium (such as Microsoft Entra authentication integration, image deletion, and webhooks). However, the included storage and image throughput are most appropriate for lower usage scenarios.                                |
+| Standard | Standard registries offer the same capabilities as Basic, with increased included storage and image throughput. Standard registries should satisfy the needs of most production scenarios.                                                                                                                                                                                                  |
+| Premium  | Premium registries provide the highest amount of included storage and concurrent operations, enabling high-volume scenarios. In addition to higher image throughput, Premium adds features such as geo-replication for managing a single registry across multiple regions, content trust for image tag signing, and private link with private endpoints to restrict access to the registry. |

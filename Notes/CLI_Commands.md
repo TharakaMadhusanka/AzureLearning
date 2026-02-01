@@ -234,7 +234,119 @@ Note - After you execute `az storage message get`, the message is removed from t
 
 42. Assign a user-assigned managed identity to an existing Azure virtual machine
 
-`az vm identity assign \
-    -g <RESOURCE GROUP> \
-    -n <VM NAME> \
-    --identities <USER ASSIGNED IDENTITY>`
+`az vm identity assign -g <RESOURCE GROUP> -n <VM NAME> --identities <USER ASSIGNED IDENTITY>`
+
+43. Register EventGrid global namespace
+
+`az provider register --namespace Microsoft.EventGrid`
+
+44. To view the registration status
+
+`az provider register --namespace Microsoft.EventGrid --query "registrationState"` // registrationState is case-sensitive
+
+45. To create eventgrid topic
+
+`az eventgrid topic create --name <name> --location <location> --resource-group <resourceGroup>`
+
+46. To create subscription to Topic
+
+`az eventgrid event-subscription create  --source-resource-id $topicId --name TopicSubscription --endpoint $endpoint`
+
+47. Get Topic access keys list
+
+`az eventgrid topic key list --name <topicName> --resource-group <resourceGroup>`
+
+48. Get Topic Details
+    `az eventgrid topic show --name <topicName> --resource-group <resourceGroup>`
+
+49. Create Azure Event Hub
+
+`az eventhubs namespace create --name <name> --resource-group <rgName> --location <location>`
+
+50. Create EventHub
+
+`az eventhubs eventhub create --name <name> --resource-group <rgName> --namepsace-name <namespace>`
+
+51. Create Service Bus
+
+`az servicebus namespace create --name mynamespace --resource-group az204tharaka`
+
+52. Create Azure Service Bus Queue
+
+`az servicebus queue create --resource-group <RG>  --namespace-name <namespace> --name <name>`
+
+53. Create Azure Container Registry
+
+`az acr create --name <name> --resource-group <rgName> --sku <pricingPlan>`
+
+54. To create DockerFile from image
+
+`echo FROM <imageregistryurl> > DockerFile`
+
+55. Build Docker Image
+
+`az acr build --image <imageName> --registry <registryName> --file <DockerFile> .`
+
+56. List down repositories
+
+`az acr repository list --name <registryName> --output table`
+
+57. List tags
+
+`az acr repository show-tags --name <registryName> --repository <repoName> --output table`
+
+58. To run Container
+
+`az acr  run --registry <registryName> --cmd '$Registry/sample/helloworld:v1' /dev/null`
+
+### Container Instance
+
+59. Create Instance
+
+`az container create --name <name> --image <imageUrl> --resource-group <resourceGroup> --ports <ports> --dns-name-label <dnsNameLabel> --location <location> --os-type <osType> --cpu <cpu> --memory <memory>`
+
+// Here required to have Admin Creds in Container Registry to pull image From
+
+60. To verify the container Status
+
+`az container show --resource-group myResourceGroup --name mycontainer --query "{FQDN:ipAddress.fqdn,ProvisioningState:provisioningState}" --out table `
+
+61. To Mount Azure Fileshare to Container Instance
+
+`az container create \
+ --resource-group $ACI*PERS_RESOURCE_GROUP \
+ --name hellofiles \
+ --image mcr.microsoft.com/azuredocs/aci-hellofiles \
+ --dns-name-label aci-demo \
+ --ports 80 \
+ *--azure-file-volume-account-name $ACI*PERS_STORAGE_ACCOUNT_NAME* \
+
+- --azure-file-volume-account-key $STORAGE_KEY* \
+   *--azure-file-volume-share-name $ACI_PERS_SHARE_NAME* \
+   *--azure-file-volume-mount-path\* /aci/logs/` 62. Create Azure Container App 1. Check the Container App Extension is the latest or not
+
+  `az extension add --name containerapp --upgrade`
+
+          2. Register Namespace
+
+  `az provider register --namespace Microsoft.App`
+
+62. Create Az Container App Environment
+
+`az containerapp create --resource-group <resourceGroup> --name <containerAppName>`
+
+63. Deploy image to container app
+
+`az containerapp create --name <name> --resource-group <rg> --environment <ContainerAppEnv> --image <containerImage> --target-port <port> --ingress <internal | external> `
+
+64. To create Cosmos db
+
+`az cosmosdb create --name <accntName> --resource-group <rgName>`
+
+65. To view the account details
+
+`az cosmosdb show --name $accountName --resource-group $resourceGroup --query "documentEndpoint" --output tsv`
+
+66. Get Cosmosdb Keys
+
+`az cosmosdb keys list --name $accountName --resource-group $resourceGroup --query "primaryMasterKey" --output tsv`

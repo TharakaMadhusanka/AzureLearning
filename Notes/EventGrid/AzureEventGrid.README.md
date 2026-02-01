@@ -28,7 +28,8 @@
    3. Depending on the type of handler, Event Grid follows different mechanisms to guarantee the delivery of the event.
       1. ex: For HTTP webhook event handlers, the event is retried until the handler returns a status code of 200 – OK. For Azure Storage Queue, the events are retried until the Queue service successfully processes the message push into the queue.
 
-- If using push delivery, the event handler is an Azure service, and a managed identity is used to authenticate Event Grid, the managed identity should have an appropriate RBAC role. For example, if sending events to Event Hubs, the managed identity used in the event subscription should be a member of the Event Hubs Data Sender role. [IMPORTANT]
+- If using **push** delivery, the event handler is an Azure service, and a managed identity is used to authenticate Event Grid, the managed identity should have an appropriate RBAC role. For example, if sending events to Event Hubs, the managed identity used in the event subscription should be a member of the Event Hubs Data Sender role. [IMPORTANT]
+- Event Handler is Centralized Service.
 
 - Azure Event Grid supports two types of event schemas:
   - Event Grid event schema
@@ -128,9 +129,55 @@ Let's say if the error is 500, then event hub wait for 30s, if after 30s endpoin
   - Before setting the dead-letter location, you must have a storage account with a container. You provide the endpoint for this container when creating the event subscription.
 
 - Event Grid uses Azure role-based access control
-- Event Grid provides the following built-in roles:
-  - ![Built in roles](image-9.png)
-  - These roles are focused on event subscriptions and don't grant access for actions such as creating topics.
+- Event Grid provides the following built-in roles
+
+| Role                                | Description                                               |
+| ----------------------------------- | --------------------------------------------------------- |
+| Event Grid Subscription Reader      | Lets you read Event Grid event subscriptions.             |
+| Event Grid Subscription Contributor | Lets you manage Event Grid event subscription operations. |
+| Event Grid Contributor              | Lets you create and manage Event Grid resources.          |
+| Event Grid Data Sender              | Lets you send events to Event Grid topics.                |
+
+- When you create an Event Grid subscription, Azure must:
+  - Register that subscription against the event source
+    - (e.g., Storage Account, Custom Topic, Resource Group, Subscription)
+  - Configure the destination (event hub, queue, etc.)
+
+If your event handler is NOT a webhook, Azure requires extra permission on the event source to finish wiring things up.
+
+| Handler type  | Permission needed                      |
+| ------------- | -------------------------------------- |
+| WebHook       | ❌ No extra permission on event source |
+| Event Hub     | ✅ Yes                                 |
+| Storage Queue | ✅ Yes                                 |
+| Service Bus   | ✅ Yes                                 |
+
+Ex: Scenario
+
+You want to subscribe to BlobCreated events and send them to Event Hub.
+
+1. To create the subscription successfully, your identity must have:
+   1. Write permission on the event source
+   - Example:
+     Storage Account
+     Resource Group
+     Subscription
+
+   Role examples: Event Grid Contributor, Contributor
+
+2. Write permission on the destination
+   Example: Event Hubs Data Sender (or appropriate role)
+
+## Why the permission is on the event source
+
+Because:
+
+- Event Grid stores the event subscription as metadata on the source resource.
+  So Azure checks:
+- “Are you allowed to create an Event Grid subscription on this resource?”
+  - That’s what Microsoft.EventGrid/EventSubscriptions/Write means.
+
+- These roles are focused on event subscriptions and don't grant access for actions such as creating topics.
 
 - Event Grid can deliver events to:
   - WebHook (HTTP endpoint)
@@ -153,16 +200,21 @@ Let's say if the error is 500, then event hub wait for 30s, if after 30s endpoin
     - Handler: Storage Queue
     - Required permission: ✅ Required on source
 
-- The required resource differs based on whether you're subscribing to a system topic or custom topic. Both types are described in this section.
+#### The required resource differs based on whether you're subscribing to a system topic or custom topic. Both types are described in this section.
 
-![Required Permission on the Source, based on the Topic Type](image-10.png)
+| Topic Type    | Description                                                                                                                                                                                                                                                               |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| System topics | Need permission to write a new event subscription at the scope of the resource publishing the event. The format of the resource is: `/subscriptions/{subscription-id}/resourceGroups/{resource-group-name}/providers/{resource-provider}/{resource-type}/{resource-name}` |
+| Custom topics | Need permission to write a new event subscription at the scope of the Event Grid topic. The format of the resource is: `/subscriptions/{subscription-id}/resourceGroups/{resource-group-name}/providers/Microsoft.EventGrid/topics/{topic-name}`                          |
 
 - Webhooks are one of the many ways to receive events from Azure Event Grid.
 - When a new event is ready, Event Grid service POSTs an HTTP request to the configured endpoint with the event in the request body.
-- When you use any of the following three Azure services, the Azure infrastructure automatically handles this authentication:
-  - Azure Logic Apps with Event Grid Connector
-  - Azure Automation via webhook
-  - Azure Functions with Event Grid Trigger
+
+#### When you use any of the following three Azure services, the Azure infrastructure automatically handles this authentication:
+
+- Azure Logic Apps with Event Grid Connector
+- Azure Automation via webhook
+- Azure Functions with Event Grid Trigger
 
 - If you're using any other type of endpoint, such as an HTTP trigger based Azure function, your endpoint code needs to participate in a validation handshake with Event Grid.
   - Event Grid supports two ways of validating the subscription.
@@ -220,6 +272,8 @@ Let's say if the error is 500, then event hub wait for 30s, if after 30s endpoin
   ]
 }`
 
+##### Provide an array with the event types, or specify All to get all event types for the event source.
+
 - The JSON syntax for filtering by subject is:
   `"filter": {
   "subjectBeginsWith": "/blobServices/default/containers/mycontainer/log",
@@ -242,6 +296,105 @@ Let's say if the error is 500, then event hub wait for 30s, if after 30s endpoin
     }
   ]
 }`
+
+you do NOT need an Event Grid namespace to create an Event Grid topic.
+
+1️⃣ Event Grid Topic (classic model)
+
+This is the original and still widely used model.
+
+- You create: Microsoft.EventGrid/topics
+- You publish events directly to that topic.
+- You create subscriptions on that topic.
+
+##### No namespace required.
+
+Typical use:
+
+- Custom application events
+- Blob, Resource Group, Subscription events
+
+2️⃣ Event Grid Namespace (newer model)
+
+This is the newer, more advanced Event Grid architecture.
+You create: Microsoft.EventGrid/namespaces
+Inside it, you create:
+
+- Topics
+- Event subscriptions
+- This model adds:
+  - MQTT support
+  - Push + Pull delivery
+  - Better throughput isolation
+  - Advanced filtering
+
+## Namespace is optional and only required for this newer architecture.
+
+| Question                                             | Answer |
+| ---------------------------------------------------- | ------ |
+| Do I need a namespace for Event Grid topics?         | ❌ No  |
+| Is namespace required for the new Event Grid model?  | ✅ Yes |
+| Is namespace required for classic Event Grid topics? | ❌ No  |
+
+## Additional
+
+Kafka vs Event Grid
+
+| Aspect          | **Apache Kafka**              | **Azure Event Grid**        |
+| --------------- | ----------------------------- | --------------------------- |
+| Core purpose    | **Event streaming platform**  | **Event routing service**   |
+| Delivery model  | Pull-based                    | Push-based                  |
+| Throughput      | Extremely high (millions/sec) | Medium (millions/day scale) |
+| Event retention | Yes (hours–days–weeks)        | No retention                |
+| Replay          | Yes                           | No                          |
+| Ordering        | Yes (per partition)           | No                          |
+| Fan-out         | Yes                           | Yes                         |
+| Consumers       | Many independent readers      | Many subscribers            |
+| Latency         | Low but not instant           | Near real-time              |
+| Use case        | Telemetry, logs, analytics    | Resource events, workflows  |
+| Ops overhead    | High (clusters, scaling)      | Near-zero (serverless)      |
+
+1️⃣ Kafka — what it is really for
+
+Kafka is: A durable event log and streaming backbone
+
+Best when:
+
+- You need replay
+- You need long retention
+- You need ordered streams
+- You need high throughput
+- You do stream processing
+- You build data pipelines
+
+Examples:
+
+- Clickstream analytics
+- IoT telemetry
+- Log ingestion
+- Fraud detection pipelines
+
+2️⃣ Event Grid — what it is really for
+
+Event Grid is:
+
+A serverless event router for Azure services
+
+Best when:
+
+- You react to Azure resource events
+- You need fan-out
+- You don’t need replay
+- You want instant triggers
+- You don’t want infra overhead
+
+Examples:
+
+Blob uploaded → Function
+
+VM created → Logic App
+
+## User registered → Email
 
 - The purpose of Cloud Event Schema - To simplify interoperability by providing a common event schema for publishing and consuming cloud-based events.
 
@@ -271,26 +424,50 @@ Azure Event Hub
 
 - Azure Event Hubs is a big data streaming platform and event ingestion service.
 - With Event Hubs, you can ingest, buffer, store, and process your stream in real time to get actionable insights.
-- Event Hubs uses a partitioned consumer model.
+- Event Hubs uses a **partitioned consumer model.**
 - Azure Event Hubs enables you to automatically capture the streaming data in Event Hubs in an Azure Blob storage or Azure Data Lake Storage account of your choice, with the added flexibility of specifying a time or size interval.
 - Setting up Capture is fast, there are no administrative costs to run it, and it scales automatically with Event Hubs throughput units in the standard tier or processing units in the premium tier.
 - ![Event Hub Capture](image-11.png)
+- Event Hubs Capture lets you process live events immediately and store them automatically for later batch analytics — using the same event stream.
 - Event Hubs Capture enables you to process real-time and batch-based pipelines on the same stream.
 - Captured data is written in Apache Avro format.
 - Event Hubs Capture enables you to set up a window to control capturing. This window is a minimum size and time configuration with a "first wins policy," meaning that the first trigger encountered causes a capture operation.
+- Same Stream == Event Hub
+
+                 ┌─────────────┐
+                 │ Real-time   │
+                 │ processing  │
+                 └─────────────┘
+                      ▲
+
+  Producers → Event Hub ─────────► Stream Analytics / Functions
+  │
+  ▼
+  Event Hubs Capture
+  │
+  ▼
+  Blob / Data Lake Storage
+  │
+  ▼
+  Batch analytics
 
 - The Storage Naming Convention [The file Name Captured]
   `{Namespace}/{EventHub}/{PartitionId}/{Year}/{Month}/{Day}/{Hour}/{Minute}/{Second}`
   ex: https://mystorageaccount.blob.core.windows.net/mycontainer/mynamespace/myeventhub/0/2017/12/08/03/03/17.avro
 
 - Event Hubs traffic is controlled by throughput units.
-- A single throughput unit allows 1 MB per second or 1,000 events per second of ingress and twice that amount of egress.
+- A single throughput unit allows 1 MB per second or 1,000 events per second of ingress and 2Mb/s that amount of egress.
+- Usage beyond your purchased TUs is throttled.
 
 Scale processing application
 
 - To scale your event processing application, you can run multiple instances of the application and have it balance the load among themselves.
 
 - The key to scale for Event Hubs is the idea of partitioned consumers. In contrast to the competing consumers pattern, the partitioned consumer pattern enables high scale by removing the contention bottleneck and facilitating end to end parallelism.
+- To balance the load between multiple instances of your program and checkpoint events when receiving
+  - In old versions use _EventProcessorHost_
+  - Newer .NET Client _EventProcessorClient_
+  - Python/ Javascript _EventHubConsumerClient_
 
 - Azure Event Hubs supports both Microsoft Entra ID and shared access signatures (SAS) to handle both authentication and authorization.
 
@@ -302,6 +479,58 @@ Scale processing application
 - To authorize a request to Event Hubs service from a managed identity in your application, you need to configure Azure role-based access control settings for that managed identity.
 
 - A key advantage of using Microsoft Entra ID with Event Hubs is that your credentials no longer need to be stored in your code. Instead, you can request an OAuth 2.0 access token from Microsoft identity platform. Microsoft Entra authenticates the security principal (a user, a group, or service principal) running the application. If authentication succeeds, Microsoft Entra ID returns the access token to the application, and the application can then use the access token to authorize requests to Azure Event Hubs.
+
+- A publisher is:
+  - A logical/virtual channel inside that inbox
+  - Identified by a publisher ID
+- Publishers are write-only identities.
+  - ✅ Send events
+  - ❌ Read events
+  - This enforces:
+    - One-way data flow
+    - Clear producer/consumer separation
+
+- “Typically, one publisher per client”
+  - Best practice:
+    - One client → one publisher ID
+  - Why?
+    - Isolation
+    - Easier tracking
+    - Better security
+  - But it’s not mandatory.
+
+- “Publishers enable fine-grained access control”
+  - This is the key benefit.
+    - Instead of: One giant shared credential for all producers
+    - You get:
+      - Per-publisher access
+      - Easier revocation
+      - Easier auditing
+- “Each client is assigned a unique token”
+  - This refers to SAS tokens.
+  - Each client gets a Shared Access Signature (SAS) token
+  - The token:
+    - Is scoped to one publisher
+    - Has an expiry time
+
+- “A client holding a token can only send to one publisher”
+  - Security guarantee:
+    - Token for publisher-A ❌ cannot send as publisher-B
+    - Prevents impersonation
+    - If clients share a token:
+      - They act as the same publisher
+      - Azure cannot distinguish them
+
+- “All tokens are signed with SAS keys”
+  - How trust works:
+    - Event Hub has a shared access key
+    - Azure signs tokens using that key
+    - Clients:
+      - Only receive tokens
+      - Never see the key
+      - This prevents:
+        - Token forgery
+        - Unauthorized publishing
 
 - To read (consume) data from Azure Event Hubs, an application must have permissions at the Event Hub (or namespace) level, not at the individual consumer group level.
 
@@ -540,3 +769,26 @@ Ingest millions of device messages per second
   | Replay | Supports event replay within the **retention window** (default 24h, can extend) |
 
 ### For CloudEvents schema, that header value is "content-type":"application/cloudevents+json; charset=utf-8". For Event Grid schema, that header value is "content-type":"application/json; charset=utf-8"
+
+- Event Grid supports multiple subscribers per topic.
+  That’s its core design goal: fan-out event delivery.
+
+| Feature                | Event Grid    |
+| ---------------------- | ------------- |
+| Fan-out                | ✅ Yes        |
+| Independent consumers  | ✅ Yes        |
+| Filters per subscriber | ✅ Yes        |
+| Replay                 | ❌ No         |
+| Ordering               | ❌ No         |
+| Guaranteed delivery    | At-least-once |
+
+- Each event subscription:
+  - Has its own endpoint (Function, Webhook, Service Bus, Queue, etc.)
+  - Has its own filters
+  - Has its own retry / dead-letter settings
+
+- An Azure Event Hubs namespace is a logical container for event hub resources within Azure.
+
+# Event Hubs is partition-based, not topic-based.
+
+# No — Azure Event Hubs does NOT support dead-lettering.

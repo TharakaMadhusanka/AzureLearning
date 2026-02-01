@@ -9,7 +9,6 @@ Expected Scope
 
 - Azure Container Registry (ACR) is a managed registry service based on the open-source Docker Registry 2.0.
 - ACR Service Tiers
-
   1.  Basic
       - A cost-optimized entry point for developers learning about Azure Container Registry.
       - Basic registries have the same programmatic capabilities as Standard and Premium (such as Microsoft Entra authentication integration, image deletion, and webhooks).
@@ -30,7 +29,6 @@ Expected Scope
 _Storage Capabilities_
 
 - Encryption-at-Rest
-
   - All container images and other artifacts in your registry are encrypted at rest.
 
   - Regional Storage - Azure Container Registry stores data in the region where the registry is created - In all regions except Brazil South and Southeast Asia, Azure might also store registry data in a paired region in the same geography.
@@ -46,11 +44,9 @@ _Azure Container Registry Tasks_
   - Extend the early parts of an application development cycle to the cloud with on-demand container image builds.
   - Enable automated builds triggered by source code updates, updates to a container's base image, or timers.
 - Task Scenarios
-
   1.  Quick Task
       1.  deploy and push a singale container image to a contianer registry on-demand, in Azure, without needing a local docker installation.
   2.  Automatically triggered task
-
       1.  Trigger on source code update
       2.  Trigger on base image update
       3.  Trigger on a schedule
@@ -106,7 +102,6 @@ _Container Group_
 - Networking |
   - Containers within a group can reach each other via localhost on the ports that they exposed, even if those ports aren't exposed externally on the group's IP address.
 - Storage |
-
   - can specify external volumes to mount within a container group.
   - Supported volumes include:
     - Azure file share
@@ -119,7 +114,6 @@ _Container Group_
 - Container instances are billed by the second, you're charged only for the compute resources used while the container executing your task is running.
 
 - Container Restart Policy
-
   - When you create a container group in Azure Container Instances, you can specify one of three restart policy settings.
   - 3 policies
     - Always
@@ -143,14 +137,13 @@ _Container Group_
 
 - To Configure Secure Environment Variable, specify it as a property 'secureValue' insted 'value' in YML
 - Deploy container group in YAML [!Important] |
+
   `az container create --resource-group myResourceGroup  --file fileName.yaml`
 
 - By default, Azure Container Instances are stateless.
 
 - Azure File Share and Container Instance
-
   - Limitations
-
     - Can only mount Azure File Share to Linux Containers
     - Azure File Share volume mount requires the Linux containers run as root.
     - Azure File share volume mounts are limited to CIFS support
@@ -227,20 +220,17 @@ containers:
 [Important]
 
 - Azure Container Apps enables
-
   - you to run microservices and containerized applications
   - on a serverless platform
   - that runs on top of Azure Kubernetes Service.
 
 - Common uses of Azure Container Apps include:
-
   - Deploying API endpoints
   - Hosting background processing applications
   - Handling event-driven processing
   - Running microservices
 
 - Applications built on Azure Container Apps can dynamically scale based on:
-
   - HTTP traffic
   - event-driven processing
   - CPU or memory load
@@ -266,7 +256,6 @@ containers:
 - Container Apps in the same environment are deployed in the same virtual network and write logs to the same Log Analytics workspace.
 
 - Reasons to deploy container apps to the same environment include situations when you need to:
-
   - Manage related services
   - Deploy different applications to the same virtual network
   - Instrument Dapr applications that communicate via the Dapr service invocation API
@@ -274,7 +263,6 @@ containers:
   - Have applications share the same log analytics workspace
 
 - Container Apps in the same environment are deployed in the same virtual network and write logs to the same Log Analytics workspace.
-
   - You might provide an existing virtual network when you create an environment.
 
 - Azure Container Apps supports any Linux-based x86-64 (linux/amd64) container image.
@@ -350,7 +338,6 @@ containers:
 - The authentication and authorization module runs in a separate container, isolated from your application code.
 
 - Authentication Flow
-
   - Without provider SDK (server-directed flow or server flow): The application delegates federated sign-in to Container Apps. Delegation is typically the case with browser apps, which presents the provider's sign-in page to the user.
   - With provider SDK (client-directed flow or client flow): The application signs users in to the provider manually and then submits the authentication token to Container Apps for validation. This approach is typical for browser-less apps that don't present the provider's sign-in page to the user. An example is a native mobile app that signs users in using the provider's SDK.
 
@@ -358,17 +345,15 @@ containers:
 
 - A revision is An immutable snapshot of a container app version.
 - By default, Container Apps creates a unique revision name with a suffix consisting of a semi-random string of alphanumeric characters.
-- New revisions are created when you update your application with revision-scope changes.
+- New revisions are created when you update your application with **revision-scope** changes.
 - A revision-scope change is any change to the parameters in the properties.template section of the container app resource template.
 
   These parameters include:
-
   - Revision suffix
   - Container configuration and images
   - Scale rules for the container application
 
 - Azure Container Apps allows your application to securely store sensitive configuration values.
-
   - Once secrets are defined at the application level, secured values are available to container apps
   - Secrets are scoped to an application, outside of any specific revision of an application.
   - Adding, removing, or changing secrets doesn't generate new revisions.
@@ -377,18 +362,14 @@ containers:
 
   An updated or deleted secret doesn't automatically affect existing revisions in your app.
   When a secret is updated or deleted, you can respond to changes in one of two ways:
-
   - Deploy a new revision.
   - Restart an existing revision.
 
 - Before you delete a secret, deploy a new revision that no longer references the old secret. Then deactivate all revisions that reference the secret.
 
-- Container Apps doesn't support Azure Key Vault integration.
-
-  - Instead, enable managed identity in the container app and use the Key Vault SDK in your app to access secrets. [!Important]
+- Container Apps supports native Azure Key Vault integration. Enable managed identity in the container app, grant the identity the Key Vault Secrets User role, and define secrets as Key Vault references using the secret's URI. Container Apps automatically retrieves and refreshes the secret value.
 
 - When you create a container app, secrets are defined using the `--secrets` parameter.
-
   - The parameter accepts a space-delimited set of name/value pairs.
   - Each pair is delimited by an equals sign (=).
 
@@ -397,7 +378,6 @@ containers:
 `az containerapp create --resource-group "my-resource-group" --name myQueueApp --environment "my-environment-name" --image demos/myQueueApp:v1 --secrets "queue-connection-string=$CONNECTIONSTRING" --env-vars "QueueName=myqueue" "ConnectionString=secretref:queue-connection-string"`
 
 - Azure Container Apps provides three channels through which you can configure Dapr:
-
   - Container Apps CLI
   - Infrastructure as Code (IaC) templates, as in Bicep or Azure Resource Manager (ARM) templates
   - The Azure portal
@@ -442,7 +422,6 @@ ACA = “run and scale my containerized application”
 ![Dapr APIs](image-3.png)
 
 - Dapr components in container apps are environment-level resources that:
-
   - Can provide a pluggable abstraction model for connecting to supporting external services.
   - Can be shared across container apps or scoped to specific container apps.
   - Can use Dapr secrets to securely retrieve configuration metadata.
@@ -451,3 +430,282 @@ ACA = “run and scale my containerized application”
 - To ensure components are loaded at runtime by only the appropriate container apps, application scopes should be used.
 
 ![Dapr Main Components](image-4.png)
+
+## Azure Container Registry Pricing Plans and Features
+
+| Feature                            | Basic            | Standard                  | Premium                  |
+| ---------------------------------- | ---------------- | ------------------------- | ------------------------ |
+| Image Storage                      | Low              | Medium                    | High                     |
+| Throughput / Concurrent Operations | Low              | Higher                    | Highest                  |
+| Suitable For                       | Dev / Learning   | Most production workloads | High-volume / Enterprise |
+| Geo-replication                    | ❌ Not supported | ❌ Not supported          | ✅ Supported             |
+| Content Trust (image signing)      | ❌               | ❌                        | ✅                       |
+| Private Link / Private Endpoints   | ❌               | ❌                        | ✅                       |
+| Webhooks                           | ✅               | ✅                        | ✅                       |
+| Microsoft Entra ID Integration     | ✅               | ✅                        | ✅                       |
+| Image Deletion                     | ✅               | ✅                        | ✅                       |
+
+#### DNL - Domain Name Label for ACR
+
+- When you create an Azure Container Registry, you provide a registry name.
+- That name becomes the Domain Name Label. `<registry-name>.azurecr.io`
+- You use it to:
+  - Push images
+  - Pull images
+  - Authenticate
+  - Configure Kubernetes / Container Apps
+
+- Rules
+
+| Rule                         | Explanation                |
+| ---------------------------- | -------------------------- |
+| Must be globally unique      | Like storage accounts      |
+| 5–50 characters              | Length requirement         |
+| Alphanumeric only            | No special characters      |
+| Lowercase only               | Uppercase not allowed      |
+| Cannot change after creation | You must recreate registry |
+
+- DNL Scope Options
+
+| DNL Scope                | Meaning                           | Who Can Reuse the Same Name After Deletion? | Security Level |
+| ------------------------ | --------------------------------- | ------------------------------------------- | -------------- |
+| **Unsecure**             | No reuse restriction              | Anyone in Azure                             | 🔴 Lowest      |
+| **Tenant Reuse**         | Restricted to same Entra tenant   | Only same tenant                            | 🟡 Medium      |
+| **Subscription Reuse**   | Restricted to same subscription   | Only same subscription                      | 🟢 Higher      |
+| **Resource Group Reuse** | Restricted to same resource group | Only same RG                                | 🟢 Very High   |
+| **No Reuse**             | Name permanently reserved         | No one (even you)                           | 🔒 Highest     |
+
+- Unsecure → Anyone can grab it
+- Tenant Reuse → Only your company
+- Subscription Reuse → Only your subscription
+- Resource Group Reuse → Only same RG
+- No Reuse → Nobody ever
+
+###### Deleted registry resources like repositories, images, and tags can't be recovered after deletion.
+
+- We must have to register _Microsoft.ContainerRegistry_ as a Subscription Resource Provider.
+
+# Required roles for Acr Tasks
+
+| Role           | Works for ACR Tasks? |
+| -------------- | -------------------- |
+| AcrPull        | ❌ No                |
+| AcrPush        | ✅ Yes               |
+| AcrContributor | ✅ Yes               |
+| Contributor    | ✅ Yes               |
+| Owner          | ✅ Yes               |
+
+- By default, Azure Container Instances are stateless. If the container crashes or stops, all of its state is lost. To persist state beyond the lifetime of the container, you must mount a volume from an external store.
+
+- To Mount Fileshare
+  - You can only mount Azure Files shares to Linux containers.
+  - Azure file share volume mount requires the Linux container run as root.
+  - Azure file share volume mounts are limited to CIFS support.
+
+- To add multiple fileshares, can use Azure Resource Manager Template or YML File. [To mount multiple volumes]
+
+### Mount Multiple Volumes
+
+- Using the YML file
+  1. Define the Volumes
+
+`"volumes": [{
+  "name": "myvolume1",
+  "azureFile": {
+    "shareName": "share1",
+    "storageAccountName": "myStorageAccount",
+    "storageAccountKey": "<storage-account-key>"
+  }
+},
+{
+  "name": "myvolume2",
+  "azureFile": {
+    "shareName": "share2",
+    "storageAccountName": "myStorageAccount",
+    "storageAccountKey": "<storage-account-key>"
+  }
+}]`
+
+2.  Mount muliple Volumes
+
+`"volumeMounts": [{
+  "name": "myvolume1",
+  "mountPath": "/mnt/share1/"
+},
+{
+  "name": "myvolume2",
+  "mountPath": "/mnt/share2/"
+}]`
+
+# Azure Container Apps
+
+- Microsoft.OperationalInsights provider for the Azure Monitor Log Analytics workspace
+
+#### Sample Container App Template
+
+`{
+    "apiVersion": "2024-02-02-preview",
+    "id": "/subscriptions/7c60defa-59d7-48fc-a874-9c775806e1b7/resourceGroups/az204tharaka/providers/Microsoft.App/containerApps/containerone",
+    "name": "containerone",
+    "type": "microsoft.app/containerapps",
+    "location": "westus2",
+    "identity": {
+        "type": "None"
+    },
+    "properties": {
+        "provisioningState": "Succeeded",
+        "runningStatus": "Running",
+        "managedEnvironmentId": "/subscriptions/7c60defa-59d7-48fc-a874-9c775806e1b7/resourceGroups/az204tharaka/providers/Microsoft.App/managedEnvironments/tharakacontainerapp",
+        "environmentId": "/subscriptions/7c60defa-59d7-48fc-a874-9c775806e1b7/resourceGroups/az204tharaka/providers/Microsoft.App/managedEnvironments/tharakacontainerapp",
+        "workloadProfileName": "Consumption",
+        "patchingMode": "Automatic",
+        "outboundIpAddresses": [
+            "20.69.82.220",
+            "20.69.83.13",
+            "4.149.134.120",
+            "4.149.134.146",
+            "4.149.133.111",
+            "4.149.134.145",
+            "4.149.133.205",
+            "4.149.133.144",
+            "4.149.132.135",
+            "4.149.132.138",
+            "4.149.133.20",
+            "4.149.135.62",
+            "20.69.83.5",
+            "20.29.139.120",
+            "4.246.51.190",
+            "4.149.66.153",
+            "4.242.107.55",
+            "4.154.251.118",
+            "4.246.4.169",
+            "20.69.83.46",
+            "20.115.200.188",
+            "20.115.201.160",
+            "20.115.201.51",
+            "20.115.201.152",
+            "20.115.201.28",
+            "20.115.201.167",
+            "4.246.122.11",
+            "4.155.83.135",
+            "4.246.106.22",
+            "4.154.180.69",
+            "52.247.251.45",
+            "4.155.19.114",
+            "4.246.76.110",
+            "4.154.202.174",
+            "40.65.89.205",
+            "4.155.217.244",
+            "20.115.194.124",
+            "20.115.194.128",
+            "4.149.180.200",
+            "4.149.180.226",
+            "4.149.180.199",
+            "4.149.180.180",
+            "4.149.180.182",
+            "4.149.180.147",
+            "4.149.180.173",
+            "4.149.180.193",
+            "4.149.180.197",
+            "4.149.176.15",
+            "20.115.194.137",
+            "20.64.134.21",
+            "172.179.51.54",
+            "4.155.95.38",
+            "20.3.46.41",
+            "20.3.35.8",
+            "4.155.93.184",
+            "20.115.194.126",
+            "20.29.134.80",
+            "20.29.134.79",
+            "20.29.134.41",
+            "20.29.134.75",
+            "20.29.132.146",
+            "20.29.134.12",
+            "20.72.193.68"
+        ],
+        "latestRevisionName": "containerone--nnwfltu",
+        "latestReadyRevisionName": "containerone--nnwfltu",
+        "latestRevisionFqdn": "containerone--nnwfltu.victoriouscoast-a67cd53d.westus2.azurecontainerapps.io",
+        "customDomainVerificationId": "DBADAB4568E9E7E5D77EE369634E32783E10A81CCB368D039C09CED465D2F47F",
+        "configuration": {
+            "secrets": [
+                {
+                    "name": "acrtharakaazurecrio-acrtharaka"
+                }
+            ],
+            "activeRevisionsMode": "Single",
+            "ingress": {
+                "fqdn": "containerone.victoriouscoast-a67cd53d.westus2.azurecontainerapps.io",
+                "external": true,
+                "targetPort": 80,
+                "exposedPort": 0,
+                "transport": "Auto",
+                "traffic": [
+                    {
+                        "weight": 100,
+                        "latestRevision": true
+                    }
+                ],
+                "customDomains": null,
+                "allowInsecure": false,
+                "ipSecurityRestrictions": null,
+                "corsPolicy": null,
+                "clientCertificateMode": null,
+                "stickySessions": null,
+                "additionalPortMappings": null,
+                "targetPortHttpScheme": null
+            },
+            "registries": [
+                {
+                    "server": "acrtharaka.azurecr.io",
+                    "username": "acrtharaka",
+                    "passwordSecretRef": "acrtharakaazurecrio-acrtharaka",
+                    "identity": ""
+                }
+            ],
+            "identitySettings": [],
+            "dapr": null,
+            "runtime": null,
+            "maxInactiveRevisions": null,
+            "service": null
+        },
+        "template": {
+            "revisionSuffix": "",
+            "terminationGracePeriodSeconds": null,
+            "containers": [
+                {
+                    "image": "acrtharaka.azurecr.io/samples/hello-world:latest",
+                    "imageType": "ContainerImage",
+                    "name": "containerone",
+                    "resources": {
+                        "cpu": 0.5,
+                        "memory": "1Gi",
+                        "ephemeralStorage": "2Gi"
+                    }
+                }
+            ],
+            "initContainers": null,
+            "scale": {
+                "minReplicas": null,
+                "maxReplicas": 10,
+                "rules": null
+            },
+            "volumes": null,
+            "serviceBinds": null
+        },
+        "eventStreamEndpoint": "https://westus2.azurecontainerapps.dev/subscriptions/7c60defa-59d7-48fc-a874-9c775806e1b7/resourceGroups/az204tharaka/containerApps/containerone/eventstream",
+        "delegatedIdentities": []
+    },
+    "systemData": {
+        "createdBy": "az204_tharaka_2026@outlook.com",
+        "createdByType": "User",
+        "createdAt": "2026-01-31T06:04:50.605Z",
+        "lastModifiedBy": "az204_tharaka_2026@outlook.com",
+        "lastModifiedByType": "User",
+        "lastModifiedAt": "2026-01-31T06:08:27.055Z"
+    }
+}`
+
+- To add multiple containers within the same container app, add container inside the Containers array in above template
+- To add multiple registries, add the registry details inside the registries property in above.
