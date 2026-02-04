@@ -6,3 +6,8 @@
 6. Service Bus - Azure.Messaging.ServiceBus
 7. Storage Queue - Azure.Storage.Queues
 8. Azure Cosmos Db - Microsoft.Azure.Cosmos
+9. Logging (Default) - Microsoft.Extensions.Logging.AzureAppServices
+
+// Libs
+
+1. System.Diagnostics.Trace - Class to log information to the Application Diagnostic Log.

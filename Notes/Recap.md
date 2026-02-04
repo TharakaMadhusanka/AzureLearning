@@ -340,3 +340,4 @@ data = response.Value.Content.ToArray();`
   | Read blobs | **Storage Blob Data Reader** |
   | Read + Write blobs | **Storage Blob Data Contributor** |
   | Full control | **Storage Blob Data Owner** |
+  - To enable Autoscaling rules, the subscription should be registered with the namespace Microsoft.Insights

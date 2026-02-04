@@ -350,3 +350,7 @@ Note - After you execute `az storage message get`, the message is removed from t
 66. Get Cosmosdb Keys
 
 `az cosmosdb keys list --name $accountName --resource-group $resourceGroup --query "primaryMasterKey" --output tsv`
+
+67. Create Azure APIM
+
+`az apim create --resource-group <rgName> --name <name> --publisher-name <publisherName> --publisher-email <publisherEmail> --sku-name <pricingTier>`
