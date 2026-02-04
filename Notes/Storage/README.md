@@ -175,6 +175,8 @@ Config:
 | Compliance    | Regulatory retention               | Regulatory or legal hold                           |
 | Modifications | Cannot delete/modify during period | Cannot delete/modify any blob until policy expires |
 
+- Upon the expiration of the retention interval, the data will continue to be in a non-modifiable state, but can be deleted. Retention policy changes may require some time to take effect
+
 ## Pricing Tiers
 
 1. Standard - general purpose V2
