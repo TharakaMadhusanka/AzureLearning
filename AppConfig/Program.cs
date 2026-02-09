@@ -16,7 +16,6 @@ var builder = new ConfigurationBuilder();
 
 builder.AddAzureAppConfiguration(options =>
 {
-
     options.Connect(new Uri(appconfigEndpoint), new DefaultAzureCredential(credoptions));
 });
 

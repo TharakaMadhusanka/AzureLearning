@@ -2,6 +2,7 @@
 using Azure.Identity;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using Azure.Storage.Sas;
 
 Console.WriteLine("Hello, World!");
 
@@ -67,3 +68,9 @@ BlobSignedIdentifier identifier = new BlobSignedIdentifier
 };
 
 containerClient.SetAccessPolicy(permissions: new BlobSignedIdentifier[] { identifier });
+
+
+// User Delegation Key
+BlobServiceClient blobServiceClient = new();
+UserDelegationKey key = blobServiceClient.GetUserDelegationKey();
+BlobSasBuilder blobSasBuilder = new BlobSasBuilder(BlobContainerSasPermissions.Read, DateTimeOffset.Now.AddDays(2));

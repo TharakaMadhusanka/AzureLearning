@@ -341,3 +341,37 @@ data = response.Value.Content.ToArray();`
   | Read + Write blobs | **Storage Blob Data Contributor** |
   | Full control | **Storage Blob Data Owner** |
   - To enable Autoscaling rules, the subscription should be registered with the namespace Microsoft.Insights
+
+- host.json
+  `{
+  "extensions": {
+    "http": {
+      "maxConcurrentRequests": 200,
+      "maxOutstandingRequests": 400,
+      "dynamicThrottlesEnabled": true
+    }
+  }
+}`
+
+| Setting                  | Controls                                  |
+| ------------------------ | ----------------------------------------- |
+| `maxConcurrentRequests`  | How many requests run at the same time    |
+| `maxOutstandingRequests` | Total requests (running + queued) allowed |
+
+dynamicThrottledEnabled
+
+- The Functions runtime automatically throttles (slows down or rejects) incoming HTTP requests when the host is under high resource pressure.
+
+It monitors:
+
+- CPU usage
+- Memory pressure
+- Thread exhaustion
+- Connections
+
+If thresholds are exceeded: It returns HTTP 429 (Too Many Requests)
+
+- EventProcessorClient balances the load between multiple instances of a program in newer .NET versions (version 5.0).
+- EventHubConsumerClient balances the load between multiple instances of a program in Python and JavaScript.
+- EventProcessorHost balances the load between multiple instances of a program in earlier .NET versions.
+- The EventHubProducerClient class is used to send events to an event hub.

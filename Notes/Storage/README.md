@@ -490,7 +490,7 @@ This is the “NUCLEAR ROLLBACK BUTTON”.
     1. Allows you to manipulate Azure Storage containers and their blobs.
 
 4.  BlobServiceClient
-    1.                          The BlobServiceClient allows you to manipulate Azure Storage service resources like Account, Container, Blob etc. and blob containers. The storage account provides the top-level namespace for the Blob service.
+    1.                                     The BlobServiceClient allows you to manipulate Azure Storage service resources like Account, Container, Blob etc. and blob containers. The storage account provides the top-level namespace for the Blob service.
 
 5.  BlobUriBuilder
     1.  The BlobUriBuilder class provides a convenient way to modify the contents of a Uri instance to point to different Azure Storage resources like an account, container, or blob.
@@ -584,3 +584,172 @@ Use Cases
 
 5. Dev/Test environments
    Share code or resources across multiple dev/test VMs.
+
+What Is Immutable Storage in Azure?
+
+Immutable storage means:
+
+Once data is written, it cannot be modified or deleted for a specified retention period.
+
+It protects data from:
+
+Accidental deletion
+
+Malicious deletion (ransomware)
+
+Admin mistakes
+
+Compliance violations
+
+🧱 Where Is It Used?
+
+Immutable policies apply to:
+
+✅ Azure Blob Storage
+
+✅ Azure Data Lake Gen2 (Blob-based)
+
+❌ Not for Azure Files
+
+❌ Not for Table storage
+
+| Policy Type          | Purpose                     | Can Modify Retention? | Can Delete Data? |
+| -------------------- | --------------------------- | --------------------- | ---------------- |
+| Time-based retention | Lock for X days             | Depends on mode       | ❌ No            |
+| Legal hold           | Lock until manually removed | N/A                   | ❌ No            |
+
+Modes of Time-Based Retention
+
+There are 2 modes:
+
+🟡 Unlocked (Governance Mode)
+
+Can extend retention period
+
+Can delete policy (with special permission)
+
+Good for testing / internal compliance
+
+🔴 Locked (Compliance Mode)
+
+Cannot reduce retention
+
+Cannot delete policy
+
+Even Microsoft cannot override
+
+Required for regulatory compliance
+
+Once locked → permanent until expiry.
+
+2️⃣ Legal Hold Policy
+
+Instead of days, you apply a tag-based hold.
+
+Example:
+
+Tag: audit-case-2026
+
+Blob stays immutable until:
+
+Legal hold is removed manually
+
+Used for:
+
+Court cases
+
+Investigations
+
+Audits
+
+No expiry date.
+
+| Level           | Supported |
+| --------------- | --------- |
+| Container level | ✅        |
+| Blob level      | ✅        |
+| Account level   | ❌        |
+
+Important:
+
+Container-level policy applies to all blobs inside.
+
+🔄 What Is Protected?
+
+When immutable policy is active:
+
+❌ Cannot delete blob
+❌ Cannot overwrite blob
+❌ Cannot change metadata
+❌ Cannot change tier
+❌ Cannot modify content
+
+But:
+
+✅ Can read
+✅ Can copy
+
+🧠 Important AZ-204 Exam Points
+
+Immutable policy is set at container level
+
+Locked policy cannot be changed
+
+Legal hold has no expiry
+
+Blob versioning + immutability = strong protection
+
+It protects against ransomware
+
+| Feature             | Immutable?                         |
+| ------------------- | ---------------------------------- |
+| Soft delete         | ❌ No (can restore but can delete) |
+| Versioning          | ❌ No (can delete versions)        |
+| Immutability policy | ✅ Yes                             |
+
+| Feature                        | Soft Delete | Immutability |
+| ------------------------------ | ----------- | ------------ |
+| Protect from accidental delete | ✅          | ✅           |
+| Protect from malicious admin   | ❌          | ✅           |
+| Required for compliance        | ❌          | ✅           |
+| Time-based locking             | ❌          | ✅           |
+
+## Lease
+
+1️⃣ Lease in Azure Blob Storage
+Purpose:
+
+Prevent multiple clients from modifying a blob at the same time.
+
+Example Scenario
+
+You have:
+
+Multiple apps updating the same blob
+
+To avoid corruption:
+
+App A acquires a lease
+
+Other apps cannot modify/delete until lease expires
+
+| Type           | Duration                  |
+| -------------- | ------------------------- |
+| Fixed lease    | 15–60 seconds             |
+| Infinite lease | Until explicitly released |
+
+Operations Allowed by Lease Holder
+
+If you hold lease ID:
+
+✅ Update blob
+
+✅ Delete blob
+
+✅ Change metadata
+
+Without lease:
+
+❌ Modify
+
+❌ Delete

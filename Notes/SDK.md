@@ -7,6 +7,10 @@
 7. Storage Queue - Azure.Storage.Queues
 8. Azure Cosmos Db - Microsoft.Azure.Cosmos
 9. Logging (Default) - Microsoft.Extensions.Logging.AzureAppServices
+10. Microsoft.Graph --> V1
+11. Microsoft.Graph.Beta --> MS Graph Beta Version
+12. Microsoft.Graph.Core --> The core library for making calls to Microsoft Graph.
+13. Microsot.Extensions.Configuration - To connect with app configurations
 
 // Libs
 

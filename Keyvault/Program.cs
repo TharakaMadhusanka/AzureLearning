@@ -1,5 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using Azure.Identity;
+using Azure.Security.KeyVault.Certificates;
 using Azure.Security.KeyVault.Secrets;
 
 Console.WriteLine("Hello, World!");
@@ -21,6 +22,8 @@ DefaultAzureCredentialOptions options = new()
 string userAssignedClientId = "efe10dbf-ab51-4f6a-a957-40a11564ba9f";
 options.ManagedIdentityClientId = userAssignedClientId;
 var client = new SecretClient(new Uri(keyVaultUrl), new DefaultAzureCredential(options));
+
+var certClient = new CertificateClient(new Uri(keyVaultUrl), new DefaultAzureCredential(options));
 
 
 // Create a Secret
